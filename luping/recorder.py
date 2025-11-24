@@ -76,6 +76,9 @@ class ScreenRecorder:
         self.is_recording = False
         self.recording_thread = None
         self.video_writer = None
+        self.use_image_sequence = False  # 备用方案：保存为图像序列
+        self.frame_dir = None
+        self.frame_count = 0
         
         # 延迟初始化 mss，避免在导入时就初始化
         self.sct = None
@@ -223,16 +226,16 @@ class ScreenRecorder:
                 continue
         
         if self.video_writer is None or not self.video_writer.isOpened():
-            error_msg = "无法初始化视频写入器，所有编码器都不可用。\n"
-            error_msg += f"最后错误: {last_error}\n"
-            error_msg += f"输出路径: {self.video_path.absolute()}\n"
-            error_msg += f"OpenCV 版本: {cv2.__version__}\n"
-            error_msg += "可能的原因:\n"
-            error_msg += "1. OpenCV 未正确安装或缺少视频编码支持\n"
-            error_msg += "2. 输出目录权限不足\n"
-            error_msg += "3. 磁盘空间不足\n"
-            error_msg += "4. 文件路径包含特殊字符\n"
-            raise RuntimeError(error_msg)
+            # 如果所有编码器都失败，使用备用方案：保存为图像序列
+            print("⚠️ 所有视频编码器都不可用，将使用备用方案：保存为图像序列")
+            self.video_writer = None
+            self.use_image_sequence = True
+            self.frame_dir = self.video_path.parent / f"{self.video_path.stem}_frames"
+            self.frame_dir.mkdir(parents=True, exist_ok=True)
+            self.frame_count = 0
+            print(f"✓ 图像序列将保存到: {self.frame_dir}")
+            print("  提示: 录制完成后，可以使用 FFmpeg 或其他工具将图像序列转换为视频")
+            print("  命令示例: ffmpeg -r 30 -i frame_%06d.jpg -c:v libx264 output.mp4")
         
         # 延迟加载并启动键盘和鼠标监听
         # 在 macOS 上，pynput 的某些操作可能导致崩溃，所以完全可选
@@ -354,8 +357,22 @@ class ScreenRecorder:
         if self.recording_thread:
             self.recording_thread.join(timeout=2)
         
-        # 释放视频写入器
-        if self.video_writer:
+        # 释放视频写入器或处理图像序列
+        if self.use_image_sequence:
+            print("正在完成图像序列保存...")
+            try:
+                if self.frame_dir and self.frame_dir.exists():
+                    frame_count = len(list(self.frame_dir.glob("frame_*.jpg")))
+                    print(f"✓ 图像序列已保存: {self.frame_dir}")
+                    print(f"  共 {frame_count} 帧图像")
+                    print(f"  提示: 可以使用 FFmpeg 转换为视频:")
+                    output_video = self.video_path.parent / (self.video_path.stem + '_from_frames.mp4')
+                    print(f"  ffmpeg -r 30 -i \"{self.frame_dir}/frame_%06d.jpg\" -c:v libx264 -pix_fmt yuv420p \"{output_video}\"")
+            except Exception as e:
+                print(f"⚠️ 处理图像序列时发生错误: {e}")
+                import traceback
+                traceback.print_exc()
+        elif self.video_writer:
             print("正在释放视频写入器...")
             try:
                 self.video_writer.release()
@@ -399,8 +416,16 @@ class ScreenRecorder:
                 if img.shape[1] != self.width or img.shape[0] != self.height:
                     img = cv2.resize(img, (self.width, self.height))
                 
-                # 写入视频
-                if self.video_writer and self.video_writer.isOpened():
+                # 写入视频或图像序列
+                if self.use_image_sequence:
+                    # 备用方案：保存为图像序列
+                    frame_filename = self.frame_dir / f"frame_{self.frame_count:06d}.jpg"
+                    cv2.imwrite(str(frame_filename), img, [cv2.IMWRITE_JPEG_QUALITY, 95])
+                    frame_count += 1
+                    self.frame_count = frame_count
+                    if frame_count % 300 == 0:  # 每10秒打印一次
+                        print(f"已保存 {frame_count} 帧图像 (约 {frame_count/30:.1f} 秒)")
+                elif self.video_writer and self.video_writer.isOpened():
                     success = self.video_writer.write(img)
                     if not success:
                         print(f"⚠️ 警告: 写入视频帧失败 (帧 {frame_count})")

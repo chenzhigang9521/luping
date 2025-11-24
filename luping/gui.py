@@ -3,6 +3,7 @@
 """
 import sys
 import os
+import platform
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from pathlib import Path
@@ -61,11 +62,17 @@ class RecorderGUI:
         
         # 设置工作目录
         try:
-            # 在打包的应用中，使用应用目录下的 recordings 文件夹
+            # 在打包的应用中，使用用户目录下的 recordings 文件夹（避免权限问题）
             if getattr(sys, 'frozen', False):
-                # 对于 .app bundle，使用应用包内的 Resources 目录
-                app_resources = Path(sys.executable).parent.parent / "Resources"
-                recordings_dir = app_resources / "recordings"
+                # Windows: 使用用户目录下的 recordings 文件夹
+                # macOS: 使用应用包内的 Resources 目录
+                if platform.system() == 'Windows':
+                    # Windows 上使用用户目录，避免权限问题
+                    recordings_dir = Path.home() / "ScreenRecorder" / "recordings"
+                else:
+                    # macOS 上使用应用包内的 Resources 目录
+                    app_resources = Path(sys.executable).parent.parent / "Resources"
+                    recordings_dir = app_resources / "recordings"
             else:
                 recordings_dir = Path("recordings")
             
