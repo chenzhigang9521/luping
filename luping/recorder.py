@@ -126,9 +126,9 @@ class ScreenRecorder:
         self.is_recording = True
         self.start_time = time.time()
         
-        # 创建输出文件名
+        # 创建输出文件名（优先使用 MP4 格式）
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.video_path = self.output_dir / f"recording_{timestamp}.avi"
+        self.video_path = self.output_dir / f"recording_{timestamp}.mp4"
         self.events_path = self.output_dir / f"events_{timestamp}.json"
         
         # 确保输出目录存在且可写
@@ -148,25 +148,36 @@ class ScreenRecorder:
         print(f"分辨率: {self.width}x{self.height}, FPS: 30")
         
         # 尝试多个编码器，按优先级顺序
-        # Windows 上推荐使用 MJPG 或 XVID
+        # 优先尝试 MP4 兼容的编码器
         codecs_to_try = [
-            ('MJPG', 'MJPG'),  # Motion JPEG，兼容性最好，Windows 上最可靠
-            ('XVID', 'XVID'),  # XVID 编码器，兼容性好
-            ('DIVX', 'DIVX'),  # DivX 编码器（Windows 上常用）
-            ('X264', 'X264'),  # H.264 编码器（如果可用）
-            ('mp4v', 'mp4v'),  # 原始编码器（作为最后备选）
+            ('H264', 'H264', '.mp4'),  # H.264 编码器，MP4 格式（最佳选择）
+            ('X264', 'X264', '.mp4'),  # X.264 编码器，MP4 格式
+            ('avc1', 'avc1', '.mp4'),  # AVC1 编码器，MP4 格式
+            ('MJPG', 'MJPG', '.avi'),  # Motion JPEG，AVI 格式（备用）
+            ('XVID', 'XVID', '.avi'),  # XVID 编码器，AVI 格式（备用）
+            ('DIVX', 'DIVX', '.avi'),  # DivX 编码器，AVI 格式（备用）
         ]
         
         self.video_writer = None
         last_error = None
         
-        for codec_name, fourcc_code in codecs_to_try:
+        for codec_name, fourcc_code, file_ext in codecs_to_try:
             try:
+                # 根据编码器调整文件扩展名
+                if file_ext == '.mp4' and self.video_path.suffix != '.mp4':
+                    # 如果尝试 MP4 编码器，确保文件扩展名是 .mp4
+                    video_path_actual = self.video_path.with_suffix('.mp4')
+                elif file_ext == '.avi' and self.video_path.suffix != '.avi':
+                    # 如果尝试 AVI 编码器，使用 .avi 扩展名
+                    video_path_actual = self.video_path.with_suffix('.avi')
+                else:
+                    video_path_actual = self.video_path
+                
                 fourcc = cv2.VideoWriter_fourcc(*fourcc_code)
-                print(f"尝试使用 {codec_name} 编码器 (FourCC: {fourcc_code})...")
+                print(f"尝试使用 {codec_name} 编码器 (FourCC: {fourcc_code}, 格式: {file_ext})...")
                 
                 # 使用绝对路径
-                video_path_str = str(self.video_path.absolute())
+                video_path_str = str(video_path_actual.absolute())
                 print(f"  视频文件路径: {video_path_str}")
                 
                 self.video_writer = cv2.VideoWriter(
@@ -185,6 +196,8 @@ class ScreenRecorder:
                     write_result = self.video_writer.write(test_frame)
                     if write_result:
                         print(f"✓ 使用 {codec_name} 编码器初始化视频写入器成功")
+                        # 更新视频路径（可能因为编码器改变了扩展名）
+                        self.video_path = video_path_actual
                         # 释放测试帧占用的资源
                         self.video_writer.release()
                         # 重新创建写入器（不使用测试帧）
