@@ -130,40 +130,58 @@ class ScreenRecorder:
         
         # 初始化视频写入器
         # 尝试多个编码器，按优先级顺序
+        # Windows 上推荐使用 MJPG 或 XVID
         codecs_to_try = [
+            ('MJPG', 'MJPG'),  # Motion JPEG，兼容性最好，Windows 上最可靠
             ('XVID', 'XVID'),  # XVID 编码器，兼容性好
-            ('MJPG', 'MJPG'),  # Motion JPEG，兼容性最好
+            ('DIVX', 'DIVX'),  # DivX 编码器（Windows 上常用）
             ('X264', 'X264'),  # H.264 编码器（如果可用）
             ('mp4v', 'mp4v'),  # 原始编码器（作为最后备选）
         ]
+        
+        print(f"准备初始化视频写入器: {self.video_path}")
+        print(f"分辨率: {self.width}x{self.height}, FPS: 30")
         
         self.video_writer = None
         for codec_name, fourcc_code in codecs_to_try:
             try:
                 fourcc = cv2.VideoWriter_fourcc(*fourcc_code)
+                print(f"尝试使用 {codec_name} 编码器...")
                 self.video_writer = cv2.VideoWriter(
                     str(self.video_path),
                     fourcc,
                     30.0,  # FPS
-                    (self.width, self.height)
+                    (self.width, self.height),
+                    True  # isColor=True (BGR 图像)
                 )
                 # 测试写入器是否可用
                 if self.video_writer.isOpened():
-                    print(f"✓ 使用 {codec_name} 编码器初始化视频写入器成功")
-                    break
+                    # 尝试写入一个测试帧来验证
+                    test_frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
+                    if self.video_writer.write(test_frame):
+                        print(f"✓ 使用 {codec_name} 编码器初始化视频写入器成功")
+                        break
+                    else:
+                        print(f"⚠️ {codec_name} 编码器无法写入测试帧，尝试下一个...")
+                        self.video_writer.release()
+                        self.video_writer = None
                 else:
                     print(f"⚠️ {codec_name} 编码器初始化失败，尝试下一个...")
-                    self.video_writer.release()
+                    if self.video_writer:
+                        self.video_writer.release()
                     self.video_writer = None
             except Exception as e:
                 print(f"⚠️ {codec_name} 编码器不可用: {e}")
                 if self.video_writer:
-                    self.video_writer.release()
+                    try:
+                        self.video_writer.release()
+                    except:
+                        pass
                     self.video_writer = None
                 continue
         
         if self.video_writer is None or not self.video_writer.isOpened():
-            raise RuntimeError("无法初始化视频写入器，所有编码器都不可用")
+            raise RuntimeError("无法初始化视频写入器，所有编码器都不可用。请检查 OpenCV 是否正确安装。")
         
         # 延迟加载并启动键盘和鼠标监听
         # 在 macOS 上，pynput 的某些操作可能导致崩溃，所以完全可选
@@ -287,7 +305,23 @@ class ScreenRecorder:
         
         # 释放视频写入器
         if self.video_writer:
-            self.video_writer.release()
+            print("正在释放视频写入器...")
+            try:
+                self.video_writer.release()
+                print(f"✓ 视频写入器已释放")
+                # 检查文件是否存在且大小大于0
+                if self.video_path.exists():
+                    file_size = self.video_path.stat().st_size
+                    print(f"✓ 视频文件已保存: {self.video_path}")
+                    print(f"  文件大小: {file_size / (1024*1024):.2f} MB")
+                    if file_size == 0:
+                        print("⚠️ 警告: 视频文件大小为 0，可能没有正确写入数据")
+                else:
+                    print("⚠️ 警告: 视频文件不存在")
+            except Exception as e:
+                print(f"⚠️ 释放视频写入器时发生错误: {e}")
+                import traceback
+                traceback.print_exc()
         
         # 保存事件到JSON文件
         self._save_events()
@@ -297,21 +331,44 @@ class ScreenRecorder:
     def _record_screen(self):
         """录制屏幕（在单独线程中运行）"""
         monitor = self.sct.monitors[1]
+        frame_count = 0
+        
+        print(f"开始录制屏幕: 分辨率 {self.width}x{self.height}, FPS 30")
         
         while self.is_recording:
-            # 捕获屏幕
-            screenshot = self.sct.grab(monitor)
-            img = np.array(screenshot)
-            
-            # 转换颜色空间（BGRA to BGR）
-            img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-            
-            # 写入视频
-            if self.video_writer:
-                self.video_writer.write(img)
-            
-            # 控制帧率（约30fps）
-            time.sleep(1/30)
+            try:
+                # 捕获屏幕
+                screenshot = self.sct.grab(monitor)
+                img = np.array(screenshot)
+                
+                # 转换颜色空间（BGRA to BGR）
+                img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+                
+                # 确保图像尺寸正确
+                if img.shape[1] != self.width or img.shape[0] != self.height:
+                    img = cv2.resize(img, (self.width, self.height))
+                
+                # 写入视频
+                if self.video_writer and self.video_writer.isOpened():
+                    success = self.video_writer.write(img)
+                    if not success:
+                        print(f"⚠️ 警告: 写入视频帧失败 (帧 {frame_count})")
+                    frame_count += 1
+                    if frame_count % 300 == 0:  # 每10秒打印一次
+                        print(f"已录制 {frame_count} 帧 (约 {frame_count/30:.1f} 秒)")
+                else:
+                    print("⚠️ 警告: 视频写入器不可用")
+                    break
+                
+                # 控制帧率（约30fps）
+                time.sleep(1/30)
+            except Exception as e:
+                print(f"⚠️ 录制屏幕时发生错误: {e}")
+                import traceback
+                traceback.print_exc()
+                break
+        
+        print(f"录制结束，共录制 {frame_count} 帧")
     
     def _on_key_press(self, key):
         """键盘按下事件"""

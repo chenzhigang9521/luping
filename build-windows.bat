@@ -59,7 +59,9 @@ rye run pyinstaller --clean --noconfirm --onefile ^
     --hidden-import mss ^
     luping\gui.py
 
-if %ERRORLEVEL% EQU 0 (
+set BUILD_RESULT=%ERRORLEVEL%
+
+if %BUILD_RESULT% EQU 0 (
     echo.
     echo ========================================
     echo Packaging completed successfully!
@@ -74,6 +76,8 @@ if %ERRORLEVEL% EQU 0 (
     echo.
     echo You can now test the application by running dist\ScreenRecorder.exe
     echo.
+    pause
+    exit /b 0
 ) else (
     echo.
     echo ========================================
@@ -84,6 +88,3 @@ if %ERRORLEVEL% EQU 0 (
     pause
     exit /b 1
 )
-
-echo Press any key to exit...
-pause >nul
