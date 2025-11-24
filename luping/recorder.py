@@ -390,15 +390,9 @@ class ScreenRecorder:
             try:
                 self.video_writer.release()
                 print(f"✓ 视频写入器已释放")
-                # 检查文件是否存在且大小大于0
-                if self.video_path.exists():
-                    file_size = self.video_path.stat().st_size
-                    print(f"✓ 视频文件已保存: {self.video_path}")
-                    print(f"  文件大小: {file_size / (1024*1024):.2f} MB")
-                    if file_size == 0:
-                        print("⚠️ 警告: 视频文件大小为 0，可能没有正确写入数据")
-                else:
-                    print("⚠️ 警告: 视频文件不存在")
+                
+                # 详细检查视频文件
+                self._verify_video_file()
             except Exception as e:
                 print(f"⚠️ 释放视频写入器时发生错误: {e}")
                 import traceback
@@ -458,6 +452,112 @@ class ScreenRecorder:
                 break
         
         print(f"录制结束，共录制 {frame_count} 帧")
+    
+    def _verify_video_file(self):
+        """验证视频文件是否正确生成"""
+        print("\n" + "=" * 60)
+        print("开始验证视频文件...")
+        print("=" * 60)
+        
+        # 1. 检查文件是否存在
+        if not self.video_path.exists():
+            print("❌ 错误: 视频文件不存在")
+            print(f"   预期路径: {self.video_path.absolute()}")
+            return False
+        
+        print(f"✓ 文件存在: {self.video_path.absolute()}")
+        
+        # 2. 检查文件大小
+        file_size = self.video_path.stat().st_size
+        print(f"✓ 文件大小: {file_size:,} 字节 ({file_size / (1024*1024):.2f} MB)")
+        
+        if file_size == 0:
+            print("❌ 错误: 视频文件大小为 0，没有写入任何数据")
+            return False
+        
+        if file_size < 1024:
+            print("⚠️ 警告: 视频文件非常小（< 1KB），可能不完整")
+        
+        # 3. 检查文件头（Magic Number）
+        try:
+            with open(self.video_path, 'rb') as f:
+                header = f.read(12)
+                print(f"✓ 文件头（前12字节）: {header.hex()}")
+                
+                # MP4 文件应该以 ftyp box 开头
+                if self.video_path.suffix == '.mp4':
+                    if header[:4] == b'\x00\x00\x00' or header[4:8] == b'ftyp':
+                        print("✓ MP4 文件头格式正确")
+                    else:
+                        print("⚠️ 警告: MP4 文件头格式可能不正确")
+                        print(f"   前4字节: {header[:4]}")
+                        print(f"   4-8字节: {header[4:8]}")
+                
+                # AVI 文件应该以 RIFF 开头
+                elif self.video_path.suffix == '.avi':
+                    if header[:4] == b'RIFF':
+                        print("✓ AVI 文件头格式正确")
+                    else:
+                        print("⚠️ 警告: AVI 文件头格式可能不正确")
+                        print(f"   前4字节: {header[:4]}")
+        except Exception as e:
+            print(f"⚠️ 读取文件头时出错: {e}")
+        
+        # 4. 尝试用 OpenCV 读取视频文件
+        print("\n尝试用 OpenCV 读取视频文件...")
+        try:
+            cap = cv2.VideoCapture(str(self.video_path))
+            if not cap.isOpened():
+                print("❌ 错误: OpenCV 无法打开视频文件")
+                return False
+            
+            # 获取视频属性
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fourcc = int(cap.get(cv2.CAP_PROP_FOURCC))
+            fourcc_str = "".join([chr((fourcc >> 8 * i) & 0xFF) for i in range(4)])
+            
+            print(f"✓ OpenCV 可以打开视频文件")
+            print(f"  帧率 (FPS): {fps}")
+            print(f"  总帧数: {frame_count}")
+            print(f"  分辨率: {width}x{height}")
+            print(f"  编码器 (FourCC): {fourcc_str} ({fourcc})")
+            
+            if frame_count == 0:
+                print("❌ 错误: 视频文件没有帧数据")
+                cap.release()
+                return False
+            
+            # 尝试读取第一帧
+            ret, frame = cap.read()
+            if ret:
+                print(f"✓ 可以读取第一帧，尺寸: {frame.shape}")
+            else:
+                print("❌ 错误: 无法读取视频帧")
+                cap.release()
+                return False
+            
+            # 尝试读取最后一帧
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count - 1)
+            ret, frame = cap.read()
+            if ret:
+                print(f"✓ 可以读取最后一帧")
+            else:
+                print("⚠️ 警告: 无法读取最后一帧，视频可能不完整")
+            
+            cap.release()
+            print("\n✓ 视频文件验证通过，文件应该是有效的")
+            return True
+            
+        except Exception as e:
+            print(f"❌ 验证视频文件时出错: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+        
+        print("=" * 60 + "\n")
     
     def _on_key_press(self, key):
         """键盘按下事件"""
