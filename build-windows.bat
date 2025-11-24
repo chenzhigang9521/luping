@@ -46,6 +46,7 @@ echo.
 
 REM Run pyinstaller using rye
 REM Note: recordings directory is created at runtime, no need to include it in the package
+REM Note: OpenCV DLL files may need to be collected manually
 rye run pyinstaller --clean --noconfirm --onefile ^
     --windowed ^
     --name="ScreenRecorder" ^
@@ -55,8 +56,10 @@ rye run pyinstaller --clean --noconfirm --onefile ^
     --hidden-import pynput._util ^
     --hidden-import pynput._util.win32 ^
     --hidden-import cv2 ^
+    --hidden-import cv2.cv2 ^
     --hidden-import numpy ^
     --hidden-import mss ^
+    --collect-all cv2 ^
     luping\gui.py
 
 set BUILD_RESULT=%ERRORLEVEL%
