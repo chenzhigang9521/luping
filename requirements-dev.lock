@@ -7,50 +7,33 @@
 #   all-features: false
 #   with-sources: false
 #   generate-hashes: false
-#   universal: false
 
 -e file:.
 altgraph==0.17.4
-    # via macholib
     # via pyinstaller
 importlib-metadata==8.5.0
     # via pyinstaller
     # via pyinstaller-hooks-contrib
-macholib==1.16.3
-    # via pyinstaller
 mss==9.0.2
     # via luping
 numpy==2.0.2
     # via luping
-    # via opencv-python
-opencv-python==4.12.0.88
+    # via opencv-contrib-python
+opencv-contrib-python==4.12.0.88
     # via luping
 packaging==25.0
     # via pyinstaller
     # via pyinstaller-hooks-contrib
+pefile==2023.2.7
+    # via pyinstaller
 pyinstaller==6.16.0
     # via luping
 pyinstaller-hooks-contrib==2025.9
     # via pyinstaller
 pynput==1.8.1
     # via luping
-pyobjc-core==11.1
-    # via pyobjc-framework-applicationservices
-    # via pyobjc-framework-cocoa
-    # via pyobjc-framework-coretext
-    # via pyobjc-framework-quartz
-pyobjc-framework-applicationservices==10.3.2
-    # via pynput
-pyobjc-framework-cocoa==10.3.2
-    # via pyobjc-framework-applicationservices
-    # via pyobjc-framework-coretext
-    # via pyobjc-framework-quartz
-pyobjc-framework-coretext==10.3.2
-    # via pyobjc-framework-applicationservices
-pyobjc-framework-quartz==10.3.2
-    # via pynput
-    # via pyobjc-framework-applicationservices
-    # via pyobjc-framework-coretext
+pywin32-ctypes==0.2.3
+    # via pyinstaller
 setuptools==75.3.2
     # via pyinstaller
     # via pyinstaller-hooks-contrib

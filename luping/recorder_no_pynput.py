@@ -10,6 +10,8 @@ from queue import Queue
 import cv2
 import mss
 import numpy as np
+import subprocess
+import shutil
 
 
 class ScreenRecorder:
@@ -22,6 +24,15 @@ class ScreenRecorder:
         self.is_recording = False
         self.recording_thread = None
         self.video_writer = None
+        # FFmpeg 管道写入器相关
+        self.use_ffmpeg_pipe = False
+        self.ffmpeg_proc = None
+        self.ffmpeg_stdin = None
+        # 调试/诊断字段
+        self._debug_log_path = None
+        self._frames_written = 0
+        self._writer_opened = False
+        self._ffmpeg_stderr = None
         
         # 延迟初始化 mss，避免在导入时就初始化
         self.sct = None
@@ -86,10 +97,10 @@ class ScreenRecorder:
         print(f"准备初始化视频写入器: {self.video_path}")
         print(f"分辨率: {self.width}x{self.height}, FPS: 30")
         
-        # 尝试多个编码器，按优先级顺序
-        # 优先尝试 MP4 兼容的编码器
+        # 增加更兼容的编码器选项，优先使用通用的 mp4v（MP4）作为首选
         codecs_to_try = [
-            ('H264', 'H264', '.mp4'),  # H.264 编码器，MP4 格式（最佳选择）
+            ('MP4V', 'mp4v', '.mp4'),  # 通用 MP4 编码器（常见且兼容性好）
+            ('H264', 'H264', '.mp4'),  # H.264 编码器，MP4 格式（若可用）
             ('X264', 'X264', '.mp4'),  # X.264 编码器，MP4 格式
             ('avc1', 'avc1', '.mp4'),  # AVC1 编码器，MP4 格式
             ('MJPG', 'MJPG', '.avi'),  # Motion JPEG，AVI 格式（备用）
@@ -130,32 +141,10 @@ class ScreenRecorder:
                 # 测试写入器是否可用
                 if self.video_writer.isOpened():
                     print(f"  VideoWriter.isOpened() = True")
-                    # 尝试写入一个测试帧来验证
-                    test_frame = np.zeros((int(self.height), int(self.width), 3), dtype=np.uint8)
-                    write_result = self.video_writer.write(test_frame)
-                    if write_result:
-                        print(f"✓ 使用 {codec_name} 编码器初始化视频写入器成功")
-                        # 更新视频路径（可能因为编码器改变了扩展名）
-                        self.video_path = video_path_actual
-                        # 释放测试帧占用的资源
-                        self.video_writer.release()
-                        # 重新创建写入器（不使用测试帧）
-                        self.video_writer = cv2.VideoWriter(
-                            video_path_str,
-                            fourcc,
-                            30.0,
-                            (int(self.width), int(self.height)),
-                            True
-                        )
-                        if self.video_writer.isOpened():
-                            break
-                        else:
-                            print(f"⚠️ {codec_name} 编码器重新初始化失败")
-                            self.video_writer = None
-                    else:
-                        print(f"⚠️ {codec_name} 编码器无法写入测试帧")
-                        self.video_writer.release()
-                        self.video_writer = None
+                    print(f"✓ 使用 {codec_name} 编码器初始化视频写入器成功")
+                    self.video_path = video_path_actual
+                    self._writer_opened = True
+                    break
                 else:
                     print(f"⚠️ {codec_name} 编码器初始化失败: VideoWriter.isOpened() = False")
                     if self.video_writer:
@@ -178,21 +167,65 @@ class ScreenRecorder:
                 continue
         
         if self.video_writer is None or not self.video_writer.isOpened():
-            error_msg = "无法初始化视频写入器，所有编码器都不可用。\n"
-            error_msg += f"最后错误: {last_error}\n"
-            error_msg += f"输出路径: {self.video_path.absolute()}\n"
-            error_msg += f"OpenCV 版本: {cv2.__version__}\n"
-            error_msg += "可能的原因:\n"
-            error_msg += "1. OpenCV 未正确安装或缺少视频编码支持\n"
-            error_msg += "2. 输出目录权限不足\n"
-            error_msg += "3. 磁盘空间不足\n"
-            error_msg += "4. 文件路径包含特殊字符\n"
-            raise RuntimeError(error_msg)
+            # 若 OpenCV VideoWriter 无法初始化，尝试通过系统 ffmpeg 管道编码
+            print("⚠️ 所有 OpenCV 视频编码器不可用，尝试使用系统 ffmpeg 管道写入...")
+            ffmpeg_ok = False
+            try:
+                ffmpeg_path = shutil.which('ffmpeg')
+                if ffmpeg_path:
+                    # 启动 ffmpeg 进程，接收 rawvideo BGR24 stdin
+                    width = int(self.width)
+                    height = int(self.height)
+                    output_str = str(self.video_path.absolute())
+                    cmd = [
+                        ffmpeg_path,
+                        '-y',
+                        '-f', 'rawvideo',
+                        '-pix_fmt', 'bgr24',
+                        '-s', f'{width}x{height}',
+                        '-r', '30',
+                        '-i', '-',
+                        '-c:v', 'libx264',
+                        '-pix_fmt', 'yuv420p',
+                        '-preset', 'veryfast',
+                        output_str
+                    ]
+                    print(f"启动 FFmpeg: {' '.join(cmd)}")
+                    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    self.ffmpeg_proc = proc
+                    self.ffmpeg_stdin = proc.stdin
+                    self.use_ffmpeg_pipe = True
+                    ffmpeg_ok = True
+                else:
+                    print("✗ 未在 PATH 中找到 ffmpeg 可执行文件")
+            except Exception as e:
+                print(f"✗ 启动 FFmpeg 时出错: {e}")
+                import traceback
+                traceback.print_exc()
+
+            if not ffmpeg_ok:
+                error_msg = "无法初始化视频写入器，所有编码器都不可用，且 FFmpeg 不可用。\n"
+                error_msg += f"最后错误: {last_error}\n"
+                error_msg += f"输出路径: {self.video_path.absolute()}\n"
+                error_msg += f"OpenCV 版本: {cv2.__version__}\n"
+                error_msg += "可能的原因:\n"
+                error_msg += "1. OpenCV 未正确安装或缺少视频编码支持\n"
+                error_msg += "2. 输出目录权限不足\n"
+                error_msg += "3. 磁盘空间不足\n"
+                error_msg += "4. 文件路径包含特殊字符\n"
+                raise RuntimeError(error_msg)
         
         # 启动屏幕录制线程
         self.recording_thread = threading.Thread(target=self._record_screen)
         self.recording_thread.daemon = True
         self.recording_thread.start()
+
+        # 初始化调试日志路径
+        try:
+            self._debug_log_path = self.video_path.parent / (self.video_path.stem + '.debug.txt')
+            self._frames_written = 0
+        except Exception:
+            self._debug_log_path = None
         
         return True
     
@@ -227,6 +260,60 @@ class ScreenRecorder:
                 import traceback
                 traceback.print_exc()
         
+        elif self.use_ffmpeg_pipe:
+            print("正在关闭 FFmpeg 管道并等待进程完成...")
+            try:
+                if self.ffmpeg_stdin:
+                    try:
+                        self.ffmpeg_stdin.close()
+                    except Exception:
+                        pass
+                    self.ffmpeg_stdin = None
+                if self.ffmpeg_proc:
+                    try:
+                        out, err = self.ffmpeg_proc.communicate(timeout=10)
+                        if out:
+                            print(f"FFmpeg stdout: {out.decode(errors='ignore')}")
+                        if err:
+                            decoded_err = err.decode(errors='ignore')
+                            print(f"FFmpeg stderr: {decoded_err}")
+                            self._ffmpeg_stderr = decoded_err
+                    except subprocess.TimeoutExpired:
+                        try:
+                            self.ffmpeg_proc.kill()
+                        except Exception:
+                            pass
+                    finally:
+                        self.ffmpeg_proc = None
+                if self.video_path.exists():
+                    file_size = self.video_path.stat().st_size
+                    print(f"✓ FFmpeg 输出文件已保存: {self.video_path}")
+                    print(f"  文件大小: {file_size / (1024*1024):.2f} MB")
+            except Exception as e:
+                print(f"⚠️ 关闭 FFmpeg 管道时发生错误: {e}")
+                import traceback
+                traceback.print_exc()
+
+        # 写入调试日志（如果可用）
+        try:
+            if self._debug_log_path:
+                info_lines = [
+                    f"video_path: {self.video_path}",
+                    f"writer_opened: {self._writer_opened}",
+                    f"use_ffmpeg_pipe: {self.use_ffmpeg_pipe}",
+                    f"frames_written: {self._frames_written}",
+                ]
+                if self._ffmpeg_stderr:
+                    info_lines.append("ffmpeg_stderr:")
+                    info_lines.append(self._ffmpeg_stderr)
+                with open(self._debug_log_path, 'w', encoding='utf-8') as f:
+                    f.write('\n'.join(info_lines))
+                print(f"✓ 调试日志已写入: {self._debug_log_path}")
+        except Exception as e:
+            print(f"⚠️ 写入调试日志失败: {e}")
+            import traceback
+            traceback.print_exc()
+
         # 保存事件到JSON文件（空事件）
         self._save_events()
         
@@ -234,7 +321,18 @@ class ScreenRecorder:
     
     def _record_screen(self):
         """录制屏幕（在单独线程中运行）"""
-        monitor = self.sct.monitors[1]
+        # 在录制线程中创建 mss 实例，避免将主线程的 GDI 句柄传入子线程
+        try:
+            sct = mss.mss()
+            monitor = sct.monitors[1]
+        except Exception:
+            # 回退到已有的 self.sct（如果有）
+            if self.sct:
+                sct = self.sct
+                monitor = sct.monitors[1]
+            else:
+                print("✗ 无法初始化屏幕捕获（mss）")
+                return
         frame_count = 0
         
         print(f"开始录制屏幕: 分辨率 {self.width}x{self.height}, FPS 30")
@@ -242,7 +340,7 @@ class ScreenRecorder:
         while self.is_recording:
             try:
                 # 捕获屏幕
-                screenshot = self.sct.grab(monitor)
+                screenshot = sct.grab(monitor)
                 img = np.array(screenshot)
                 
                 # 转换颜色空间（BGRA to BGR）
@@ -253,10 +351,24 @@ class ScreenRecorder:
                     img = cv2.resize(img, (self.width, self.height))
                 
                 # 写入视频
-                if self.video_writer and self.video_writer.isOpened():
-                    success = self.video_writer.write(img)
-                    if not success:
-                        print(f"⚠️ 警告: 写入视频帧失败 (帧 {frame_count})")
+                if self.use_ffmpeg_pipe:
+                    # 将 BGR 原始帧写入 FFmpeg stdin
+                    try:
+                        if self.ffmpeg_stdin is None:
+                            raise RuntimeError('FFmpeg stdin 未就绪')
+                        if img.dtype != np.uint8:
+                            img = img.astype(np.uint8)
+                        if not img.flags['C_CONTIGUOUS']:
+                            img = np.ascontiguousarray(img)
+                        self.ffmpeg_stdin.write(img.tobytes())
+                    except Exception as e:
+                        print(f"⚠️ 写入 FFmpeg 帧异常 (帧 {frame_count}): {e}")
+                    frame_count += 1
+                elif self.video_writer and self.video_writer.isOpened():
+                    try:
+                        self.video_writer.write(img)
+                    except Exception as e:
+                        print(f"⚠️ 警告: 写入视频帧时发生异常 (帧 {frame_count}): {e}")
                     frame_count += 1
                     if frame_count % 300 == 0:  # 每10秒打印一次
                         print(f"已录制 {frame_count} 帧 (约 {frame_count/30:.1f} 秒)")
