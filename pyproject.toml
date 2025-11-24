@@ -1,0 +1,30 @@
+[project]
+name = "luping"
+version = "1.0.0"
+description = "录屏软件 - 记录屏幕、键盘和鼠标操作"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pynput>=1.7.6",
+    "opencv-python>=4.8.1.78",
+    "mss>=9.0.1",
+    "numpy>=1.24.3",
+    "pyinstaller>=6.3.0",
+]
+
+[project.scripts]
+luping = "luping.gui:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
