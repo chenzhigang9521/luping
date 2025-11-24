@@ -31,15 +31,24 @@ if %ERRORLEVEL% NEQ 0 (
 echo Dependencies synced successfully
 echo.
 
-echo Step 3: Starting packaging...
+echo Step 3: Creating recordings directory...
+if not exist "recordings" (
+    mkdir recordings
+    echo Created recordings directory
+) else (
+    echo Recordings directory already exists
+)
+echo.
+
+echo Step 4: Starting packaging...
 echo This may take a few minutes, please wait...
 echo.
 
 REM Run pyinstaller using rye
+REM Note: recordings directory is created at runtime, no need to include it in the package
 rye run pyinstaller --clean --noconfirm --onefile ^
     --windowed ^
     --name="ScreenRecorder" ^
-    --add-data "recordings;recordings" ^
     --hidden-import pynput ^
     --hidden-import pynput.keyboard ^
     --hidden-import pynput.mouse ^
