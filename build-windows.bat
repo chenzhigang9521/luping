@@ -72,6 +72,8 @@ if %ERRORLEVEL% EQU 0 (
     echo - First run may require administrator privileges (for screen recording)
     echo - Windows Defender may warn about unsigned app, choose "Run anyway"
     echo.
+    echo You can now test the application by running dist\ScreenRecorder.exe
+    echo.
 ) else (
     echo.
     echo ========================================
@@ -83,4 +85,5 @@ if %ERRORLEVEL% EQU 0 (
     exit /b 1
 )
 
-pause
+echo Press any key to exit...
+pause >nul
