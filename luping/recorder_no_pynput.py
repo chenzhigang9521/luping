@@ -47,11 +47,16 @@ class ScreenRecorder:
             monitor = self.sct.monitors[1]  # 主显示器
             self.width = monitor["width"]
             self.height = monitor["height"]
+            print(f"检测到屏幕分辨率: {self.width}x{self.height}")
+            # 高分辨率提示
+            if self.width >= 2560 or self.height >= 1440:
+                print(f"✓ 支持高分辨率录制: {self.width}x{self.height}")
         except Exception as e:
             print(f"警告: 初始化屏幕捕获失败: {e}")
             # 使用默认值
             self.width = 1920
             self.height = 1080
+            print(f"使用默认分辨率: {self.width}x{self.height}")
         
         # 事件队列（虽然不记录事件，但保持接口一致）
         self.events_queue = Queue()
@@ -71,6 +76,10 @@ class ScreenRecorder:
                 monitor = self.sct.monitors[1]
                 self.width = monitor["width"]
                 self.height = monitor["height"]
+                print(f"检测到屏幕分辨率: {self.width}x{self.height}")
+                # 高分辨率提示
+                if self.width >= 2560 or self.height >= 1440:
+                    print(f"✓ 支持高分辨率录制: {self.width}x{self.height}")
             except Exception as e:
                 raise RuntimeError(f"无法初始化屏幕捕获: {e}")
             
