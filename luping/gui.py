@@ -41,26 +41,16 @@ def _extract_and_register_embedded_fonts(app_path: Path):
     # Support PyInstaller onedir layout where data files are placed in _internal
     internal_dir = Path(app_path) / '_internal'
     possible_fonts = [Path(app_path) / 'fonts', internal_dir / 'fonts']
-    # decide where to write log: prefer _internal if present
-    if internal_dir.exists() and internal_dir.is_dir():
-        log_path = internal_dir / 'font_register.log'
-    else:
-        log_path = Path(app_path) / 'font_register.log'
-
+    
     try:
         fonts_dir = None
-        with open(log_path, 'a', encoding='utf-8') as lf:
-            lf.write(f"_extract start: app_path={app_path}\n")
-            for p in possible_fonts:
-                lf.write(f"check fonts candidate: {p} exists={p.exists()}\n")
-            # pick the first existing fonts dir
-            for p in possible_fonts:
-                if p.exists() and p.is_dir():
-                    fonts_dir = p
-                    break
-            if not fonts_dir:
-                lf.write("no fonts dir found in candidates, aborting extract\n")
-                return None
+        # pick the first existing fonts dir
+        for p in possible_fonts:
+            if p.exists() and p.is_dir():
+                fonts_dir = p
+                break
+        if not fonts_dir:
+            return None
 
         tmp_dir = Path(tempfile.mkdtemp(prefix="screenrec_fonts_"))
         copied = []
@@ -75,12 +65,7 @@ def _extract_and_register_embedded_fonts(app_path: Path):
                         fw.write(fr.read())
                     copied.append(str(dest))
                 except Exception as e:
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write(f"复制字体失败: {ttf} -> {dest}: {e}\n")
-
-        with open(log_path, 'a', encoding='utf-8') as lf:
-            lf.write(f"selected_fonts_dir: {fonts_dir}\n")
-            lf.write(f"copied_fonts: {copied}\n")
+                    pass
 
         # 在 Windows 上注册字体为进程私有（FR_PRIVATE）
         registered = []
@@ -94,11 +79,9 @@ def _extract_and_register_embedded_fonts(app_path: Path):
                         res = ctypes.windll.gdi32.AddFontResourceExW(path_w, FR_PRIVATE, 0)
                         registered.append((path_w, int(res)))
                     except Exception as e:
-                        with open(log_path, 'a', encoding='utf-8') as lf:
-                            lf.write(f"AddFontResourceExW 失败: {f}: {e}\n")
+                        pass
             except Exception as e:
-                with open(log_path, 'a', encoding='utf-8') as lf:
-                    lf.write(f"注册字体失败: {e}\n")
+                pass
 
         # 广播字体更改消息，提示系统/应用刷新字体列表
         try:
@@ -109,14 +92,8 @@ def _extract_and_register_embedded_fonts(app_path: Path):
                 SMTO_ABORTIFHUNG = 0x0002
                 res = ctypes.c_ulong()
                 ctypes.windll.user32.SendMessageTimeoutW(HWND_BROADCAST, WM_FONTCHANGE, 0, 0, SMTO_ABORTIFHUNG, 1000, ctypes.byref(res))
-                with open(log_path, 'a', encoding='utf-8') as lf:
-                    lf.write(f"Broadcasted WM_FONTCHANGE, result={res.value}\n")
         except Exception as e:
-            with open(log_path, 'a', encoding='utf-8') as lf:
-                lf.write(f"广播 WM_FONTCHANGE 失败: {e}\n")
-
-        with open(log_path, 'a', encoding='utf-8') as lf:
-            lf.write(f"registered: {registered}\n")
+            pass
 
         # 尝试刷新并记录 Tk 可见的字体家族（如果 tkinter 已导入）
         try:
@@ -125,22 +102,13 @@ def _extract_and_register_embedded_fonts(app_path: Path):
                 try:
                     import tkinter.font as _tkfont
                     fams = list(_tkfont.families())
-                    # write a short preview and any matches to the log
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write(f"tk_families_count: {len(fams)}\n")
-                        lf.write('tk_families_preview: ' + ','.join(fams[:200]) + '\n')
-                        matches = [f for f in fams if 'noto' in f.lower() or 'noto' in (' '.join([p.name for p in Path(f).suffixes]) if False else '')]
-                        lf.write(f"tk_families_matches_noto: {matches}\n")
                 except Exception as e:
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write(f"读取 tk font families 失败: {e}\n")
+                    pass
         except Exception:
             pass
 
         return tmp_dir
     except Exception as e:
-        with open(log_path, 'a', encoding='utf-8') as lf:
-            lf.write(f"_extract_and_register_embedded_fonts 错误: {e}\n")
         print(f"_extract_and_register_embedded_fonts 错误: {e}")
         return None
 
@@ -827,17 +795,8 @@ class RecorderGUI:
         注意：如果用户已经选择了默认字体（如"新宋体"），不会被嵌入字体覆盖。
         """
         try:
-            internal_dir = Path(application_path) / '_internal'
-            if internal_dir.exists() and internal_dir.is_dir():
-                log_path = internal_dir / 'font_register.log'
-            else:
-                log_path = Path(application_path) / 'font_register.log'
-
             max_attempts = 6
             attempt = getattr(self, '_font_apply_attempt', 1)
-
-            with open(log_path, 'a', encoding='utf-8') as lf:
-                lf.write(f"_apply_embedded_font_later attempt={attempt}\n")
 
             # 检查当前用户选择的字体
             current_font = getattr(self, '_ui_font_family', None)
@@ -849,15 +808,11 @@ class RecorderGUI:
                 if not is_embedded:
                     # 用户选择了非嵌入字体，应该保持用户的选择
                     user_chose_non_embedded = True
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write(f"用户已选择非嵌入字体: {current_font}，将保持用户选择\n")
 
             try:
                 fams = list(tkfont.families())
             except Exception as e:
                 fams = []
-                with open(log_path, 'a', encoding='utf-8') as lf:
-                    lf.write(f"tkfont.families() 失败: {e}\n")
 
             embedded_family = None
             for fam in fams:
@@ -865,10 +820,6 @@ class RecorderGUI:
                     embedded_family = fam
                     break
 
-            with open(log_path, 'a', encoding='utf-8') as lf:
-                lf.write(f"delayed_families_count: {len(fams)}\n")
-                lf.write(f"delayed_detected_embedded_family: {embedded_family}\n")
-                lf.write(f"user_chose_non_embedded: {user_chose_non_embedded}\n")
 
             # 只有在检测到嵌入字体且用户没有选择非嵌入字体时才应用
             if embedded_family and not user_chose_non_embedded:
@@ -956,8 +907,6 @@ class RecorderGUI:
                     except Exception:
                         pass
 
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write(f"applied_embedded_family: {embedded_family}\n")
                     try:
                         # Also record the final applied family as chosen_font in font_debug.txt for clarity
                         debug_path = Path(application_path) / 'font_debug.txt'
@@ -966,28 +915,15 @@ class RecorderGUI:
                     except Exception:
                         pass
                 except Exception as e:
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write(f"apply_embedded_family 失败: {e}\n")
+                    pass
             else:
-                if user_chose_non_embedded:
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write(f"保持用户选择的字体: {current_font} (attempt {attempt})\n")
-                else:
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write(f"未检测到嵌入字体家族 (attempt {attempt})\n")
                 # schedule retry
                 if attempt < max_attempts:
                     self._font_apply_attempt = attempt + 1
                     try:
                         self.root.after(500, self._apply_embedded_font_later)
-                        with open(log_path, 'a', encoding='utf-8') as lf:
-                            lf.write(f"scheduled next attempt={self._font_apply_attempt}\n")
                     except Exception as e:
-                        with open(log_path, 'a', encoding='utf-8') as lf:
-                            lf.write(f"调度下一次尝试失败: {e}\n")
-                else:
-                    with open(log_path, 'a', encoding='utf-8') as lf:
-                        lf.write("嵌入字体检测达到最大重试次数，放弃\n")
+                        pass
 
             # also append to font_debug.txt for visibility
             try:
@@ -997,11 +933,7 @@ class RecorderGUI:
             except Exception:
                 pass
         except Exception as e:
-            try:
-                with open(Path(application_path) / 'font_register.log', 'a', encoding='utf-8') as lf:
-                    lf.write(f"_apply_embedded_font_later 总体失败: {e}\n")
-            except Exception:
-                pass
+            pass
 
     def _apply_font_from_selector(self, show_message=True):
         """应用默认字体（新宋体）到整个UI。
