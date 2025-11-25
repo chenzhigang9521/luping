@@ -271,20 +271,36 @@ class RecorderGUI:
                         chosen = f
                         break
 
-            # Prefer 新宋体 (NSimSun) first, then other common Chinese fonts
+            # 强制优先选择"新宋体"作为默认字体
             try:
                 found = None
-                chinese_priority = ['新宋体', 'nsimsun', 'simsun', 'simhei', '黑体', 'microsoft yahei', '微软雅黑', 'yahei']
-                for cand in chinese_priority:
+                # 优先查找"新宋体"
+                nsimsun_priority = ['新宋体', 'nsimsun', 'NSimSun']
+                for cand in nsimsun_priority:
                     for fam in families:
                         try:
-                            if cand.lower() in fam.lower() or cand in fam:
+                            if cand.lower() == fam.lower() or cand == fam:
                                 found = fam
                                 break
                         except Exception:
                             continue
                     if found:
                         break
+                
+                # 如果找不到"新宋体"，尝试其他中文字体
+                if not found:
+                    chinese_priority = ['simsun', 'simhei', '黑体', 'microsoft yahei', '微软雅黑', 'yahei']
+                    for cand in chinese_priority:
+                        for fam in families:
+                            try:
+                                if cand.lower() in fam.lower() or cand in fam:
+                                    found = fam
+                                    break
+                            except Exception:
+                                continue
+                        if found:
+                            break
+                
                 if found:
                     chosen = found
             except Exception:
@@ -492,25 +508,12 @@ class RecorderGUI:
         self.root.update_idletasks()
 
         # 自动应用默认 UI 字体（静默），确保启动时控件使用选定的默认字体
-        # 确保字体选择器的值设置为默认字体
-        try:
-            if hasattr(self, '_font_var') and hasattr(self, '_ui_font_family') and self._ui_font_family:
-                self._font_var.set(self._ui_font_family)
-        except Exception:
-            pass
-        
         # 强制应用字体到所有控件
         def apply_default_font():
-            """应用默认字体到所有控件"""
+            """应用默认字体（新宋体）到所有控件"""
             try:
                 if hasattr(self, '_ui_font_family') and self._ui_font_family:
                     chosen = self._ui_font_family
-                    # 确保 _font_var 的值正确
-                    if hasattr(self, '_font_var'):
-                        try:
-                            self._font_var.set(chosen)
-                        except Exception:
-                            pass
                     
                     # 更新共享字体对象
                     if getattr(self, 'font_ui', None):
@@ -551,13 +554,6 @@ class RecorderGUI:
                                 widget.configure(font=font_obj)
                             except Exception:
                                 pass
-                    
-                    # 调用完整的应用方法以确保所有设置都生效
-                    if hasattr(self, '_apply_font_from_selector'):
-                        try:
-                            self._apply_font_from_selector(show_message=False)
-                        except Exception:
-                            pass
             except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -695,56 +691,6 @@ class RecorderGUI:
         except Exception:
             pass
 
-        # 字体选择器：列出若干可用字体供用户选择并应用
-        selector_frame = tk.Frame(self.root)
-        selector_frame.pack(pady=6, fill=tk.X, padx=20)
-
-        tk.Label(selector_frame, text="选择字体:", font=self.font_status if getattr(self, 'font_status', None) else ("Arial", 10)).pack(side=tk.LEFT)
-        fams = getattr(self, '_available_families', []) or []
-        # Put likely embedded families (containing 'noto') first
-        try:
-            sorted_fams = sorted(fams, key=lambda f: (0 if 'noto' in f.lower() else 1, f.lower()))
-        except Exception:
-            sorted_fams = list(fams)
-
-        # Default selection falls back to current UI family or first available
-        default_choice = self._ui_font_family or (sorted_fams[0] if sorted_fams else 'Arial')
-        self._font_var = tk.StringVar(value=default_choice)
-
-        # Try to create a Combobox; if ttk not available or values empty, fall back to Entry
-        font_combo_widget = None
-        if sorted_fams:
-            try:
-                font_combo_widget = ttk.Combobox(selector_frame, values=sorted_fams, textvariable=self._font_var, state='readonly', width=40)
-                font_combo_widget.pack(side=tk.LEFT, padx=6)
-            except Exception:
-                font_combo_widget = None
-
-        if font_combo_widget is None:
-            # fallback - show an Entry so user can still type a family name
-            try:
-                font_combo_widget = tk.Entry(selector_frame, textvariable=self._font_var, width=40)
-                font_combo_widget.pack(side=tk.LEFT, padx=6)
-            except Exception:
-                # as a last resort, place a label indicating selector unavailable
-                try:
-                    tk.Label(selector_frame, text="(字体选择器不可用)", fg="gray").pack(side=tk.LEFT, padx=6)
-                except Exception:
-                    pass
-
-        # Apply button (always visible)
-        try:
-            apply_btn = tk.Button(selector_frame, text="应用字体", command=self._apply_font_from_selector, font=self.font_small if getattr(self, 'font_small', None) else ("Arial", 9))
-            apply_btn.pack(side=tk.LEFT, padx=6)
-        except Exception:
-            pass
-        # Add a visible button to list available fonts in a dialog (helps users find the selector)
-        try:
-            list_btn = tk.Button(selector_frame, text="显示字体列表", command=self._show_font_list, font=self.font_small if getattr(self, 'font_small', None) else ("Arial", 9))
-            list_btn.pack(side=tk.LEFT, padx=6)
-        except Exception:
-            pass
-        
         # 更改输出目录按钮
         change_dir_button = tk.Button(
             self.root,
@@ -986,37 +932,26 @@ class RecorderGUI:
                 pass
 
     def _apply_font_from_selector(self, show_message=True):
-        """Apply the font family selected in the Combobox/Entry to the whole UI and log the action.
+        """应用默认字体（新宋体）到整个UI。
+        
+        注意：此方法保留用于内部调用，字体选择器已移除，始终使用默认字体。
 
         Args:
             show_message (bool): if True, show a messagebox after applying; set False for silent startup apply.
         """
         try:
+            # 直接使用 _ui_font_family（默认应该是"新宋体"）
             chosen = None
             try:
-                if hasattr(self, '_font_var'):
-                    chosen = self._font_var.get()
+                if hasattr(self, '_ui_font_family') and self._ui_font_family:
+                    chosen = self._ui_font_family
             except Exception:
                 pass
-            
-            # 如果 _font_var 没有值，尝试使用 _ui_font_family 作为后备
-            if not chosen:
-                try:
-                    if hasattr(self, '_ui_font_family') and self._ui_font_family:
-                        chosen = self._ui_font_family
-                        # 同时更新 _font_var，确保同步
-                        if hasattr(self, '_font_var'):
-                            try:
-                                self._font_var.set(chosen)
-                            except Exception:
-                                pass
-                except Exception:
-                    pass
 
             if not chosen:
                 try:
                     if show_message:
-                        messagebox.showwarning("警告", "未选择字体")
+                        messagebox.showwarning("警告", "未设置默认字体")
                 except Exception:
                     pass
                 return

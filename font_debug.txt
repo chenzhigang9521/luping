@@ -8,7 +8,9 @@ menu_font_actual: {'family': '新宋体', 'size': 13, 'weight': 'normal', 'slant
 scaling: 1.3333333333333333
 screen_pixels: 1920x1080
 screen_mm: 508x286
-ui_created: font_label_exists=False, output_label_exists=True, selector_exists=True
+ui_created: font_label_exists=False, output_label_exists=True, selector_exists=False
+delayed_embedded_family: Noto Serif TC
+delayed_embedded_family: Noto Serif TC
 delayed_embedded_family: Noto Serif TC
 delayed_embedded_family: Noto Serif TC
 delayed_embedded_family: Noto Serif TC
