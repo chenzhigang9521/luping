@@ -13,6 +13,7 @@ import numpy as np
 import platform
 import subprocess
 import shutil
+import sys
 
 # 延迟导入 pynput，避免在导入时就初始化导致崩溃
 _keyboard = None
@@ -171,7 +172,6 @@ class ScreenRecorder:
             ('X264', 'X264', '.mp4'),  # X.264 编码器
             ('avc1', 'avc1', '.mp4'),  # AVC1 编码器
         ]
-        
         self.video_writer = None
         last_error = None
         
@@ -402,30 +402,167 @@ class ScreenRecorder:
                 self.video_writer.release()
                 print(f"✓ 视频写入器已释放")
 
-                # 详细检查视频文件，若不可播放并且系统有 ffmpeg，则尝试转码
+                # 检查视频时长是否与实际录制时长匹配
+                need_fix_fps = False
+                actual_fps = None
+                if hasattr(self, '_actual_recording_duration') and hasattr(self, '_frames_written'):
+                    actual_duration = self._actual_recording_duration
+                    frame_count = self._frames_written
+                    if actual_duration > 0 and frame_count > 0:
+                        # 计算实际FPS
+                        actual_fps = frame_count / actual_duration
+                        # 如果实际FPS与目标FPS差异较大，需要修正
+                        if abs(actual_fps - 30.0) > 2.0:
+                            need_fix_fps = True
+                            print(f"检测到FPS不匹配: 实际FPS={actual_fps:.2f}, 目标FPS=30.0")
+                            print(f"实际录制时长: {actual_duration:.2f} 秒, 写入帧数: {frame_count}")
+                            print(f"将使用FFmpeg调整视频FPS以匹配实际时长...")
+
+                # 详细检查视频文件，若不可播放或FPS不匹配，使用 ffmpeg 转码
                 ok = self._verify_video_file()
-                if not ok:
-                    print("⚠️ 视频文件验证未通过，尝试使用系统 ffmpeg 转码为可播放 MP4（如果可用）...")
+                if not ok or need_fix_fps:
+                    print("正在使用 ffmpeg 转码/修正视频（如果可用）...")
                     try:
-                        import shutil, subprocess
-                        ff = shutil.which('ffmpeg')
+                        import subprocess
+                        ff = self._find_ffmpeg()
                         if ff:
-                            output_fixed = self.video_path.with_suffix('.fixed.mp4')
-                            cmd = [ff, '-y', '-i', str(self.video_path), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', str(output_fixed)]
-                            print(f"运行: {' '.join(cmd)}")
-                            proc = subprocess.run(cmd, capture_output=True, text=True)
-                            if proc.returncode == 0 and output_fixed.exists():
-                                print(f"✓ 转码成功: {output_fixed}")
-                                # 替换视频路径为转码后文件
-                                self.video_path = output_fixed
-                                # 再次验证
-                                self._verify_video_file()
+                            # 如果只是FPS不匹配，使用实际FPS重新编码
+                            if need_fix_fps and actual_fps:
+                                # 使用最终文件名（去掉.fixed后缀，直接替换为.mp4）
+                                output_fixed = self.video_path.with_suffix('.mp4')
+                                # 如果目标文件已存在，先删除
+                                if output_fixed.exists():
+                                    try:
+                                        output_fixed.unlink()
+                                    except:
+                                        pass
+                                # 使用实际FPS重新编码，确保视频时长匹配
+                                # 关键策略：
+                                # 1. 使用 -r 在 -i 之前设置输入帧率，告诉FFmpeg原始视频的实际FPS
+                                # 2. 使用 -r 在输出前设置输出帧率
+                                # 3. 使用 -vsync cfr 确保恒定帧率
+                                # 4. 使用 -t 参数限制输出时长，确保不超过实际录制时长
+                                # 这样视频时长 = min(帧数/实际FPS, 实际录制时长) = 实际录制时长
+                                frame_count = self._frames_written if hasattr(self, '_frames_written') else 0
+                                cmd = [
+                                    ff, '-y',
+                                    '-r', str(actual_fps),  # 设置输入帧率（告诉FFmpeg原始视频的实际FPS）
+                                    '-i', str(self.video_path),
+                                    '-c:v', 'libx264',
+                                    '-pix_fmt', 'yuv420p',
+                                    '-r', str(actual_fps),  # 设置输出帧率
+                                    '-vsync', 'cfr',  # 恒定帧率模式
+                                    '-t', str(actual_duration),  # 限制输出时长为实际录制时长
+                                    str(output_fixed)
+                                ]
+                                print(f"运行: {' '.join(cmd)}")
+                                # 在Windows上隐藏控制台窗口
+                                kwargs = {'capture_output': True, 'text': True, 'timeout': 300}
+                                if sys.platform == 'win32':
+                                    kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+                                proc = subprocess.run(cmd, **kwargs)
+                                if proc.returncode == 0 and output_fixed.exists():
+                                    print(f"✓ FPS修正成功: {output_fixed}")
+                                    # 验证修正后的视频
+                                    try:
+                                        import cv2
+                                        cap = cv2.VideoCapture(str(output_fixed))
+                                        if cap.isOpened():
+                                            fixed_fps = cap.get(cv2.CAP_PROP_FPS)
+                                            fixed_frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                                            fixed_duration = fixed_frame_count / fixed_fps if fixed_fps > 0 else 0
+                                            cap.release()
+                                            print(f"  修正后视频FPS: {fixed_fps:.2f}")
+                                            print(f"  修正后视频帧数: {fixed_frame_count}")
+                                            print(f"  修正后视频时长: {fixed_duration:.2f} 秒")
+                                            if hasattr(self, '_actual_recording_duration'):
+                                                diff = abs(fixed_duration - self._actual_recording_duration)
+                                                print(f"  与实际录制时长差异: {diff:.2f} 秒")
+                                                # 如果差异仍然较大，尝试使用更精确的方法
+                                                if diff > 0.5:
+                                                    print(f"  ⚠️ 警告: 修正后时长差异仍较大，尝试使用更精确的方法...")
+                                                    # 使用 setpts 滤镜来精确控制时长
+                                                    cmd2 = [
+                                                        ff, '-y',
+                                                        '-i', str(self.video_path),
+                                                        '-c:v', 'libx264',
+                                                        '-pix_fmt', 'yuv420p',
+                                                        '-filter:v', f'setpts=PTS/{actual_fps}*{actual_duration}/{frame_count}',
+                                                        '-r', str(actual_fps),
+                                                        '-t', str(actual_duration),
+                                                        str(output_fixed)
+                                                    ]
+                                                    print(f"  运行精确修正: {' '.join(cmd2)}")
+                                                    # 在Windows上隐藏控制台窗口
+                                                    kwargs2 = {'capture_output': True, 'text': True, 'timeout': 300}
+                                                    if sys.platform == 'win32':
+                                                        kwargs2['creationflags'] = subprocess.CREATE_NO_WINDOW
+                                                    proc2 = subprocess.run(cmd2, **kwargs2)
+                                                    if proc2.returncode == 0 and output_fixed.exists():
+                                                        cap2 = cv2.VideoCapture(str(output_fixed))
+                                                        if cap2.isOpened():
+                                                            fixed_fps2 = cap2.get(cv2.CAP_PROP_FPS)
+                                                            fixed_frame_count2 = int(cap2.get(cv2.CAP_PROP_FRAME_COUNT))
+                                                            fixed_duration2 = fixed_frame_count2 / fixed_fps2 if fixed_fps2 > 0 else 0
+                                                            cap2.release()
+                                                            diff2 = abs(fixed_duration2 - self._actual_recording_duration)
+                                                            print(f"  精确修正后视频时长: {fixed_duration2:.2f} 秒")
+                                                            print(f"  与实际录制时长差异: {diff2:.2f} 秒")
+                                    except Exception as e:
+                                        print(f"  警告: 验证修正后视频时出错: {e}")
+                                    
+                                    # 替换视频路径为修正后文件
+                                    old_path = self.video_path
+                                    self.video_path = output_fixed
+                                    # 删除旧文件
+                                    try:
+                                        old_path.unlink()
+                                        print(f"  ✓ 已删除原始视频文件: {old_path.name}")
+                                    except Exception as e:
+                                        print(f"  警告: 删除原始视频文件失败: {e}")
+                                    # 再次验证
+                                    self._verify_video_file()
+                                else:
+                                    print(f"✗ FPS修正失败")
+                                    if proc.stderr:
+                                        print(f"  错误信息: {proc.stderr[:500]}")
+                                    if proc.stdout:
+                                        print(f"  输出信息: {proc.stdout[:500]}")
                             else:
-                                print(f"✗ 转码失败: {proc.stderr}")
+                                # 只是转码，不修正FPS
+                                output_fixed = self.video_path.with_suffix('.mp4')
+                                # 如果目标文件已存在，先删除
+                                if output_fixed.exists():
+                                    try:
+                                        output_fixed.unlink()
+                                    except:
+                                        pass
+                                cmd = [ff, '-y', '-i', str(self.video_path), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', str(output_fixed)]
+                                print(f"运行: {' '.join(cmd)}")
+                                # 在Windows上隐藏控制台窗口
+                                kwargs = {'capture_output': True, 'text': True}
+                                if sys.platform == 'win32':
+                                    kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+                                proc = subprocess.run(cmd, **kwargs)
+                                if proc.returncode == 0 and output_fixed.exists():
+                                    print(f"✓ 转码成功: {output_fixed}")
+                                    # 替换视频路径为转码后文件
+                                    self.video_path = output_fixed
+                                    # 再次验证
+                                    self._verify_video_file()
+                                else:
+                                    print(f"✗ 转码失败: {proc.stderr}")
                         else:
-                            print("✗ 系统未找到 ffmpeg，无法转码")
+                            print("✗ 未找到 ffmpeg，无法转码/修正FPS")
+                            print("  提示: 请安装 ffmpeg 或确保打包时包含了 ffmpeg")
+                            if need_fix_fps:
+                                print(f"  ⚠️ 警告: 视频时长可能不准确！")
+                                print(f"     实际录制时长: {actual_duration:.2f} 秒")
+                                print(f"     视频文件时长: {frame_count/30.0:.2f} 秒 (基于 {frame_count} 帧 @ 30.0 fps)")
+                                print(f"     时长差异: {abs(actual_duration - frame_count/30.0):.2f} 秒")
+                                print(f"     建议: 安装 ffmpeg 后重新录制，或手动使用 ffmpeg 修正视频时长")
                     except Exception as e:
-                        print(f"⚠️ 转码过程中发生异常: {e}")
+                        print(f"⚠️ 转码/修正FPS过程中发生异常: {e}")
                         import traceback
                         traceback.print_exc()
             except Exception as e:
@@ -483,11 +620,26 @@ class ScreenRecorder:
                 print("✗ 无法初始化屏幕捕获（mss）")
                 return
         frame_count = 0
+        target_fps = 30.0
+        frame_interval = 1.0 / target_fps  # 每帧间隔时间（秒）
         
-        print(f"开始录制屏幕: 分辨率 {self.width}x{self.height}, FPS 30")
+        print(f"开始录制屏幕: 分辨率 {self.width}x{self.height}, FPS {target_fps}")
+        
+        # 使用基于时间戳的精确帧率控制
+        # 记录录制开始时间（用于计算实际录制时长）
+        recording_start_time = time.time()
+        next_frame_time = recording_start_time  # 下一帧应该写入的时间
         
         while self.is_recording:
             try:
+                current_time = time.time()
+                
+                # 如果还没到下一帧的时间，等待
+                wait_time = next_frame_time - current_time
+                if wait_time > 0:
+                    time.sleep(wait_time)
+                    current_time = time.time()  # 更新当前时间
+                
                 # 捕获屏幕
                 screenshot = sct.grab(monitor)
                 img = np.array(screenshot)
@@ -507,7 +659,9 @@ class ScreenRecorder:
                     frame_count += 1
                     self.frame_count = frame_count
                     if frame_count % 300 == 0:  # 每10秒打印一次
-                        print(f"已保存 {frame_count} 帧图像 (约 {frame_count/30:.1f} 秒)")
+                        elapsed_time = time.time() - recording_start_time
+                        actual_fps = frame_count / elapsed_time if elapsed_time > 0 else 0
+                        print(f"已保存 {frame_count} 帧图像 (实际时长: {elapsed_time:.1f} 秒, 实际FPS: {actual_fps:.2f})")
                 elif self.use_ffmpeg_pipe:
                     # 将原始 BGR 帧写入 FFmpeg stdin
                     try:
@@ -524,23 +678,48 @@ class ScreenRecorder:
                         print(f"⚠️ 警告: 写入视频帧时发生异常 (帧 {frame_count}): {e}")
                     frame_count += 1
                     if frame_count % 300 == 0:  # 每10秒打印一次
-                        print(f"已录制 {frame_count} 帧 (约 {frame_count/30:.1f} 秒)")
+                        elapsed_time = time.time() - recording_start_time
+                        actual_fps = frame_count / elapsed_time if elapsed_time > 0 else 0
+                        print(f"已录制 {frame_count} 帧 (实际时长: {elapsed_time:.1f} 秒, 实际FPS: {actual_fps:.2f})")
                 else:
                     print("⚠️ 警告: 视频写入器不可用")
                     break
                 
-                # 控制帧率（约30fps）
-                time.sleep(1/30)
+                # 更新下一帧时间
+                # 如果处理太慢（超过一帧间隔），从当前时间开始计算，避免累积延迟
+                if current_time > next_frame_time + frame_interval:
+                    # 处理太慢，从当前时间重新开始计时
+                    next_frame_time = current_time + frame_interval
+                else:
+                    # 正常情况，按固定间隔递增
+                    next_frame_time += frame_interval
             except Exception as e:
                 print(f"⚠️ 录制屏幕时发生错误: {e}")
                 import traceback
                 traceback.print_exc()
                 break
         
+        # 计算实际录制时长
+        recording_end_time = time.time()
+        actual_duration = recording_end_time - recording_start_time
+        expected_duration = frame_count / target_fps
+        
+        # 计算实际FPS（基于实际时长和帧数）
+        actual_fps = frame_count / actual_duration if actual_duration > 0 else target_fps
+        
         print(f"录制结束，共录制 {frame_count} 帧")
+        print(f"实际录制时长: {actual_duration:.2f} 秒")
+        print(f"理论视频时长: {expected_duration:.2f} 秒 (基于 {frame_count} 帧 @ {target_fps} fps)")
+        print(f"实际FPS: {actual_fps:.2f} (基于 {frame_count} 帧 / {actual_duration:.2f} 秒)")
+        if abs(actual_duration - expected_duration) > 0.5:
+            print(f"⚠️ 警告: 实际时长与理论时长差异较大 ({abs(actual_duration - expected_duration):.2f} 秒)")
+            print(f"   将使用实际FPS ({actual_fps:.2f}) 来调整视频")
+        
         # 把本次录制的帧数保存到实例字段，供 stop_recording 使用
         try:
             self._frames_written = frame_count
+            self._actual_recording_duration = actual_duration
+            self._actual_fps = actual_fps
         except Exception:
             pass
     
@@ -610,11 +789,25 @@ class ScreenRecorder:
             fourcc = int(cap.get(cv2.CAP_PROP_FOURCC))
             fourcc_str = "".join([chr((fourcc >> 8 * i) & 0xFF) for i in range(4)])
             
+            # 计算视频时长
+            video_duration = frame_count / fps if fps > 0 else 0
+            
             print(f"✓ OpenCV 可以打开视频文件")
             print(f"  帧率 (FPS): {fps}")
             print(f"  总帧数: {frame_count}")
+            print(f"  视频时长: {video_duration:.2f} 秒 (基于 {frame_count} 帧 @ {fps} fps)")
             print(f"  分辨率: {width}x{height}")
             print(f"  编码器 (FourCC): {fourcc_str} ({fourcc})")
+            
+            # 如果记录了实际录制时长，进行比较
+            if hasattr(self, '_actual_recording_duration'):
+                actual_duration = self._actual_recording_duration
+                diff = abs(video_duration - actual_duration)
+                print(f"  实际录制时长: {actual_duration:.2f} 秒")
+                print(f"  时长差异: {diff:.2f} 秒")
+                if diff > 1.0:
+                    print(f"  ⚠️ 警告: 视频时长与实际录制时长差异较大！")
+                    print(f"     可能原因: 帧率设置不正确或帧写入不完整")
             
             if frame_count == 0:
                 print("❌ 错误: 视频文件没有帧数据")
@@ -651,12 +844,109 @@ class ScreenRecorder:
         print("=" * 60 + "\n")
 
     # -------------------- FFmpeg 管道相关方法 --------------------
+    def _find_ffmpeg(self):
+        """查找 ffmpeg 可执行文件，支持打包后的应用"""
+        # 1. 尝试在 PATH 中查找（包括系统 PATH 和用户 PATH）
+        try:
+            import os
+            # 先尝试直接查找（如果PATH已经包含）
+            ffmpeg_path = shutil.which('ffmpeg')
+            if ffmpeg_path:
+                return ffmpeg_path
+            
+            # 如果找不到，尝试从注册表获取系统 PATH（Windows）
+            if sys.platform == 'win32':
+                try:
+                    import winreg
+                    # 获取系统PATH
+                    with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment") as key:
+                        system_path = winreg.QueryValueEx(key, "Path")[0]
+                    # 获取用户PATH
+                    try:
+                        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment") as key:
+                            user_path = winreg.QueryValueEx(key, "Path")[0]
+                    except:
+                        user_path = ""
+                    
+                    # 合并PATH并查找
+                    combined_path = system_path + os.pathsep + user_path + os.pathsep + os.environ.get('PATH', '')
+                    old_path = os.environ.get('PATH', '')
+                    os.environ['PATH'] = combined_path
+                    ffmpeg_path = shutil.which('ffmpeg')
+                    os.environ['PATH'] = old_path  # 恢复
+                    if ffmpeg_path:
+                        return ffmpeg_path
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        
+        # 2. 尝试在常见安装位置查找（Windows）
+        if sys.platform == 'win32':
+            common_paths = []
+            # WinGet 安装路径（支持通配符）
+            localappdata = os.environ.get('LOCALAPPDATA', '')
+            if localappdata:
+                winget_base = Path(localappdata) / 'Microsoft' / 'WinGet' / 'Packages'
+                if winget_base.exists():
+                    # 查找所有 Gyan.FFmpeg 相关目录
+                    for pkg_dir in winget_base.glob('Gyan.FFmpeg*'):
+                        # 查找 ffmpeg-*-full_build 目录
+                        for build_dir in pkg_dir.glob('ffmpeg-*-full_build'):
+                            ffmpeg_exe = build_dir / 'bin' / 'ffmpeg.exe'
+                            if ffmpeg_exe.exists():
+                                common_paths.append(ffmpeg_exe)
+                        # 也检查直接在 pkg_dir 下的 bin 目录
+                        ffmpeg_exe = pkg_dir / 'bin' / 'ffmpeg.exe'
+                        if ffmpeg_exe.exists():
+                            common_paths.append(ffmpeg_exe)
+            
+            # 标准安装路径
+            program_files = os.environ.get('ProgramFiles', '')
+            program_files_x86 = os.environ.get('ProgramFiles(x86)', '')
+            if program_files:
+                common_paths.append(Path(program_files) / 'ffmpeg' / 'bin' / 'ffmpeg.exe')
+            if program_files_x86:
+                common_paths.append(Path(program_files_x86) / 'ffmpeg' / 'bin' / 'ffmpeg.exe')
+            
+            # 检查所有路径
+            for ffmpeg_path in common_paths:
+                try:
+                    if ffmpeg_path.exists():
+                        return str(ffmpeg_path)
+                except Exception:
+                    continue
+        
+        # 3. 尝试在应用目录中查找（打包后的应用）
+        try:
+            if getattr(sys, 'frozen', False):
+                # 打包后的应用
+                if hasattr(sys, '_MEIPASS'):
+                    app_dir = Path(sys._MEIPASS)
+                else:
+                    app_dir = Path(sys.executable).parent
+                
+                # 检查应用目录
+                ffmpeg_exe = app_dir / 'ffmpeg.exe'
+                if ffmpeg_exe.exists():
+                    return str(ffmpeg_exe)
+                
+                # 检查应用目录的父目录（onedir模式）
+                parent_dir = Path(sys.executable).parent
+                ffmpeg_exe = parent_dir / 'ffmpeg.exe'
+                if ffmpeg_exe.exists():
+                    return str(ffmpeg_exe)
+        except Exception:
+            pass
+        
+        return None
+    
     def _try_start_ffmpeg(self, output_path: Path) -> bool:
         """尝试使用系统 ffmpeg 启动管道写入进程，返回是否成功"""
         try:
-            ffmpeg_path = shutil.which('ffmpeg')
+            ffmpeg_path = self._find_ffmpeg()
             if not ffmpeg_path:
-                print("✗ 未在 PATH 中找到 ffmpeg 可执行文件")
+                print("✗ 未找到 ffmpeg 可执行文件")
                 return False
 
             width = int(self.width)
@@ -669,17 +959,21 @@ class ScreenRecorder:
                 '-f', 'rawvideo',
                 '-pix_fmt', 'bgr24',
                 '-s', f'{width}x{height}',
-                '-r', '30',
+                '-r', '30',  # 输入帧率
                 '-i', '-',
                 '-c:v', 'libx264',
                 '-pix_fmt', 'yuv420p',
                 '-preset', 'veryfast',
+                '-r', '30',  # 输出帧率，确保与输入一致
                 output_str
             ]
 
             print(f"启动 FFmpeg: {' '.join(cmd)}")
             # 在 Windows 上，ensure stdin is PIPE and use creationflags to hide console
-            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            kwargs = {'stdin': subprocess.PIPE, 'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+            if sys.platform == 'win32':
+                kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+            proc = subprocess.Popen(cmd, **kwargs)
             self.ffmpeg_proc = proc
             self.ffmpeg_stdin = proc.stdin
             return True

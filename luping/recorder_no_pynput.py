@@ -12,6 +12,7 @@ import mss
 import numpy as np
 import subprocess
 import shutil
+import sys
 
 
 class ScreenRecorder:
@@ -191,7 +192,11 @@ class ScreenRecorder:
                         output_str
                     ]
                     print(f"启动 FFmpeg: {' '.join(cmd)}")
-                    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    # 在Windows上隐藏控制台窗口
+                    kwargs = {'stdin': subprocess.PIPE, 'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+                    if sys.platform == 'win32':
+                        kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+                    proc = subprocess.Popen(cmd, **kwargs)
                     self.ffmpeg_proc = proc
                     self.ffmpeg_stdin = proc.stdin
                     self.use_ffmpeg_pipe = True
@@ -334,11 +339,28 @@ class ScreenRecorder:
                 print("✗ 无法初始化屏幕捕获（mss）")
                 return
         frame_count = 0
+        target_fps = 30.0
+        frame_interval = 1.0 / target_fps  # 每帧间隔时间（秒）
         
-        print(f"开始录制屏幕: 分辨率 {self.width}x{self.height}, FPS 30")
+        print(f"开始录制屏幕: 分辨率 {self.width}x{self.height}, FPS {target_fps}")
+        
+        # 使用基于时间戳的精确帧率控制
+        # 记录录制开始时间（用于计算实际录制时长）
+        recording_start_time = time.time()
+        # 记录下一帧应该的时间戳
+        next_frame_time = recording_start_time
         
         while self.is_recording:
             try:
+                # 等待到下一帧的时间
+                current_time = time.time()
+                wait_time = next_frame_time - current_time
+                if wait_time > 0:
+                    time.sleep(wait_time)
+                # 注意：即使延迟了，也不跳过帧，继续写入
+                # 这样可以确保帧数与实际时间匹配
+                # 如果延迟过大，会在下一帧时自动追赶
+                
                 # 捕获屏幕
                 screenshot = sct.grab(monitor)
                 img = np.array(screenshot)
@@ -371,20 +393,43 @@ class ScreenRecorder:
                         print(f"⚠️ 警告: 写入视频帧时发生异常 (帧 {frame_count}): {e}")
                     frame_count += 1
                     if frame_count % 300 == 0:  # 每10秒打印一次
-                        print(f"已录制 {frame_count} 帧 (约 {frame_count/30:.1f} 秒)")
+                        elapsed_time = time.time() - recording_start_time
+                        print(f"已录制 {frame_count} 帧 (实际时长: {elapsed_time:.1f} 秒, 理论时长: {frame_count/target_fps:.1f} 秒)")
                 else:
                     print("⚠️ 警告: 视频写入器不可用")
                     break
                 
-                # 控制帧率（约30fps）
-                time.sleep(1/30)
+                # 更新下一帧时间
+                # 如果处理太慢（超过一帧间隔），从当前时间开始计算，避免累积延迟
+                current_actual_time = time.time()
+                if current_actual_time > next_frame_time + frame_interval:
+                    # 处理太慢，从当前时间重新开始计时
+                    next_frame_time = current_actual_time + frame_interval
+                else:
+                    # 正常情况，按固定间隔递增
+                    next_frame_time += frame_interval
+                if current_actual_time > next_frame_time + frame_interval:
+                    # 如果延迟超过一帧，从当前时间重新开始，避免累积延迟
+                    next_frame_time = current_actual_time + frame_interval
+                else:
+                    # 正常情况，按帧间隔递增
+                    next_frame_time += frame_interval
             except Exception as e:
                 print(f"⚠️ 录制屏幕时发生错误: {e}")
                 import traceback
                 traceback.print_exc()
                 break
         
+        # 计算实际录制时长
+        recording_end_time = time.time()
+        actual_duration = recording_end_time - recording_start_time
+        expected_duration = frame_count / target_fps
+        
         print(f"录制结束，共录制 {frame_count} 帧")
+        print(f"实际录制时长: {actual_duration:.2f} 秒")
+        print(f"理论视频时长: {expected_duration:.2f} 秒 (基于 {frame_count} 帧 @ {target_fps} fps)")
+        if abs(actual_duration - expected_duration) > 0.5:
+            print(f"⚠️ 警告: 实际时长与理论时长差异较大 ({abs(actual_duration - expected_duration):.2f} 秒)")
     
     def _save_events(self):
         """保存事件到JSON文件（空事件列表）"""
