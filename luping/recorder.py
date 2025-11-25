@@ -87,7 +87,6 @@ class ScreenRecorder:
         self.ffmpeg_proc = None
         self.ffmpeg_stdin = None
         # 调试/诊断字段
-        self._debug_log_path = None
         self._frames_written = 0
         self._writer_opened = False
         self._ffmpeg_stderr = None
@@ -364,12 +363,11 @@ class ScreenRecorder:
         self.recording_thread.daemon = True
         self.recording_thread.start()
 
-        # 初始化调试日志路径
+        # 初始化帧数计数
         try:
-            self._debug_log_path = self.video_path.parent / (self.video_path.stem + '.debug.txt')
             self._frames_written = 0
         except Exception:
-            self._debug_log_path = None
+            pass
         
         return True
     
@@ -589,26 +587,6 @@ class ScreenRecorder:
                 import traceback
                 traceback.print_exc()
 
-        # 写入调试日志（如果可用）
-        try:
-            if self._debug_log_path:
-                info_lines = [
-                    f"video_path: {self.video_path}",
-                    f"writer_opened: {self._writer_opened}",
-                    f"use_image_sequence: {self.use_image_sequence}",
-                    f"use_ffmpeg_pipe: {self.use_ffmpeg_pipe}",
-                    f"frames_written: {self._frames_written}",
-                ]
-                if self._ffmpeg_stderr:
-                    info_lines.append("ffmpeg_stderr:")
-                    info_lines.append(self._ffmpeg_stderr)
-                with open(self._debug_log_path, 'w', encoding='utf-8') as f:
-                    f.write('\n'.join(info_lines))
-                print(f"✓ 调试日志已写入: {self._debug_log_path}")
-        except Exception as e:
-            print(f"⚠️ 写入调试日志失败: {e}")
-            import traceback
-            traceback.print_exc()
         
         # 保存事件到JSON文件
         self._save_events()
