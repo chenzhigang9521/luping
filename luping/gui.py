@@ -457,6 +457,12 @@ class RecorderGUI:
         self.countdown_timer_id = None
         self.is_counting_down = False
         
+        # 快捷键相关变量
+        self.hotkey_enabled = True  # 默认启用快捷键
+        self.hotkey_key = 'f9'  # 默认快捷键 F9
+        self.hotkey_listener = None
+        self.hotkey_thread = None
+        
         # 设置工作目录
         try:
             # 在打包的应用中，使用用户目录下的 recordings 文件夹（避免权限问题）
@@ -586,6 +592,9 @@ class RecorderGUI:
 
         # 更新状态
         self._update_status()
+        
+        # 启动全局快捷键监听
+        self._start_hotkey_listener()
     
     def _create_ui(self):
         """创建用户界面"""
@@ -667,6 +676,27 @@ class RecorderGUI:
             fg="red"
         )
         # 不立即pack，在倒计时开始时再显示
+        
+        # 快捷键设置
+        hotkey_frame = tk.Frame(self.root, pady=10)
+        hotkey_frame.pack()
+        
+        self.hotkey_var = tk.BooleanVar(value=True)  # 默认启用
+        hotkey_checkbox = tk.Checkbutton(
+            hotkey_frame,
+            text="启用全局快捷键",
+            variable=self.hotkey_var,
+            command=self._toggle_hotkey,
+            font=self.font_status if getattr(self, 'font_status', None) else ("Arial", 10)
+        )
+        hotkey_checkbox.pack(side=tk.LEFT, padx=5)
+        
+        tk.Label(
+            hotkey_frame,
+            text="(F9: 开始/停止录制)",
+            font=self.font_small if getattr(self, 'font_small', None) else ("Arial", 9),
+            fg="gray"
+        ).pack(side=tk.LEFT, padx=5)
         
         # 按钮框架
         button_frame = tk.Frame(self.root, pady=30)
@@ -1628,6 +1658,103 @@ class RecorderGUI:
             self.timer_id = self.root.after(1000, self._update_timer)
         else:
             self.time_label.config(text="录制时长: 00:00:00")
+    
+    def _start_hotkey_listener(self):
+        """启动全局快捷键监听器"""
+        if not self.hotkey_enabled:
+            return
+        
+        # 如果已经在运行，先停止
+        if self.hotkey_listener is not None:
+            try:
+                self.hotkey_listener.stop()
+            except:
+                pass
+        
+        try:
+            # 尝试导入pynput.keyboard
+            try:
+                from pynput import keyboard
+            except ImportError:
+                print("警告: pynput未安装，无法使用全局快捷键")
+                return
+            
+            # 在后台线程中启动快捷键监听
+            def hotkey_listener_thread():
+                try:
+                    def on_hotkey():
+                        """快捷键回调函数"""
+                        if not self.hotkey_enabled:
+                            return
+                        # 在主线程中执行操作
+                        self.root.after(0, self._handle_hotkey)
+                    
+                    # 创建全局热键监听器（F9键）
+                    listener = keyboard.GlobalHotKeys({
+                        '<f9>': on_hotkey
+                    })
+                    self.hotkey_listener = listener
+                    listener.start()
+                    
+                    # 保持监听器运行
+                    try:
+                        while self.hotkey_enabled:
+                            if not listener.running:
+                                break
+                            time.sleep(0.1)
+                    except:
+                        pass
+                except Exception as e:
+                    print(f"快捷键监听器错误: {e}")
+                    import traceback
+                    traceback.print_exc()
+                finally:
+                    if self.hotkey_listener:
+                        try:
+                            self.hotkey_listener.stop()
+                        except:
+                            pass
+            
+            self.hotkey_thread = threading.Thread(target=hotkey_listener_thread, daemon=True)
+            self.hotkey_thread.start()
+            print("✓ 全局快捷键监听已启动 (F9)")
+        except Exception as e:
+            print(f"启动快捷键监听器失败: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _handle_hotkey(self):
+        """处理快捷键按下事件"""
+        if not self.recorder:
+            return
+        
+        # 如果正在录制，停止录制
+        if self.recorder.is_recording:
+            self.stop_recording()
+        # 如果正在倒计时，取消倒计时
+        elif self.is_counting_down:
+            self._cancel_countdown()
+        # 否则开始录制
+        else:
+            self.start_recording()
+    
+    def _toggle_hotkey(self):
+        """切换快捷键启用状态"""
+        self.hotkey_enabled = self.hotkey_var.get()
+        if self.hotkey_enabled:
+            # 如果之前没有启动，现在启动
+            if self.hotkey_thread is None or not self.hotkey_thread.is_alive():
+                self._start_hotkey_listener()
+            print("✓ 全局快捷键已启用")
+        else:
+            # 停止快捷键监听器
+            if self.hotkey_listener is not None:
+                try:
+                    self.hotkey_listener.stop()
+                    self.hotkey_listener = None
+                except:
+                    pass
+            print("✗ 全局快捷键已禁用")
 
 
 def main():
