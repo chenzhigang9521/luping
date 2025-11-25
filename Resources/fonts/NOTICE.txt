@@ -1,0 +1,19 @@
+Noto Sans Regular - redistribution notice
+
+This directory contains the Noto Sans Regular TrueType font included with
+the application to ensure consistent UI rendering across Windows machines.
+
+Font source:
+  https://github.com/googlefonts/noto-fonts
+
+License:
+  Noto fonts are available under open-source licenses (SIL Open Font License,
+  Apache 2.0, or similar) depending on the specific Noto family. You must
+  verify the license for the specific font file included before redistributing
+  in a commercial product. The font included here was fetched from the
+  GoogleFonts repository for convenience during packaging.
+
+If you need to replace this font with a different font (for licensing or
+branding reasons), put the desired .ttf/.otf files into `resources/fonts/`
+and re-run the packaging script (`tools/run_pyinstaller.py`) or add them to
+the `dist/fonts/` directory on the deployment package.

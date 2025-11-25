@@ -99,6 +99,16 @@ docker run --rm -v "$PWD:/app" -w /app python:3.9 bash -c "
 3. **说明文件**: 包含 README 说明系统要求和安装步骤
 4. **数字签名**: 对于正式发布，建议对 macOS 和 Windows 版本进行代码签名
 
+## 嵌入字体以保证 UI 一致性
+
+为了在大量 Windows 机器上保证界面字体一致性，打包流程可以将开源字体一并包含在应用中：
+
+- 将字体文件（`.ttf`/`.otf`）放入 `resources/fonts/`。
+- 打包脚本 `tools/run_pyinstaller.py` 会把 `resources/fonts/*.ttf` 自动包含到构建产物（目标目录下的 `fonts/`）。
+- 程序启动时会在进程级别尝试注册这些字体（Windows 使用 `AddFontResourceExW`），并把 Tk 的命名字体设置为嵌入字体，从而确保 UI 在没有预安装字体的机器上也能正常显示。
+
+注意与合规：请确认用于分发的字体许可允许嵌入和再分发。推荐使用 Google Noto 字体（开源、适合多语言），或使用你们已有商用许可的字体文件。
+
 ## 常见问题
 
 **Q: 可以在 macOS 上打包 Windows 版本吗？**

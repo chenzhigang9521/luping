@@ -1,0 +1,358 @@
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+user_applied_font: Segoe UI Black
+user_applied_font: Segoe UI Semibold
+user_applied_font: Segoe UI Semilight
+user_applied_font: Tw Cen MT
+user_applied_font: Sitka Subheading
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+user_applied_font: Segoe UI Emoji
+user_applied_font: Segoe UI Semibold
+user_applied_font: Showcard Gothic
+user_applied_font: Segoe UI Emoji
+user_applied_font: Tw Cen MT
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+user_applied_font: Segoe UI Black
+user_apply_before_default_font: {'family': 'Segoe UI Black', 'size': 13, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Segoe UI Black', 'size': 13, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Segoe UI
+user_apply_before_default_font: {'family': 'Segoe UI', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Segoe UI', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Segoe UI
+user_apply_before_default_font: {'family': 'Segoe UI', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Segoe UI', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Segoe UI Light
+user_apply_before_default_font: {'family': 'Segoe UI Light', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Segoe UI Light', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Segoe UI Symbol
+user_apply_before_default_font: {'family': 'Segoe UI Symbol', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Segoe UI Symbol', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Times New Roman CE
+user_apply_before_default_font: {'family': '宋体', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': '宋体', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: System
+user_apply_before_default_font: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Segoe UI', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Segoe UI', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Segoe UI', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Segoe UI', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Segoe UI', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+user_applied_font: System
+user_apply_before_default_font: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Segoe UI', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Segoe UI', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Segoe UI', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Segoe UI', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Segoe UI', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+user_applied_font: Segoe UI Emoji
+user_apply_before_default_font: {'family': 'Segoe UI Emoji', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Segoe UI Emoji', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Segoe UI Semilight
+user_apply_before_default_font: {'family': 'Segoe UI Semilight', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Segoe UI Semilight', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Segoe UI Semilight
+user_apply_before_default_font: {'family': 'Segoe UI Semilight', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Segoe UI Semilight', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: SimSun-ExtB
+user_apply_before_default_font: {'family': 'SimSun-ExtB', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'SimSun-ExtB', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: 阿里巴巴普惠体 M
+user_apply_before_default_font: {'family': '阿里巴巴普惠体 M', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': '阿里巴巴普惠体 M', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: @阿里巴巴普惠体 M
+user_apply_before_default_font: {'family': '@阿里巴巴普惠体 M', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': '@阿里巴巴普惠体 M', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Marlett
+user_apply_before_default_font: {'family': 'Marlett', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Marlett', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: 造字工房力黑（非商用）常规体
+user_apply_before_default_font: {'family': '造字工房力黑（非商用）常规体', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': '造字工房力黑（非商用）常规体', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Modern
+user_apply_before_default_font: {'family': 'Modern', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Modern', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Fixedsys
+user_apply_before_default_font: {'family': 'Fixedsys', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Fixedsys', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+user_applied_font: Script
+user_apply_before_default_font: {'family': 'Script', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'Script', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Noto Serif TC', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Noto Serif TC', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Noto Serif TC', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Noto Serif TC', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Noto Serif TC', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+user_applied_font: System
+user_apply_before_default_font: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Segoe UI', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Segoe UI', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Segoe UI', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Segoe UI', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Segoe UI', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+start_button_font_actual: {'family': 'Segoe UI', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'Segoe UI', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+user_applied_font: System
+user_apply_before_default_font: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_after_default_font: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+user_apply_shared_fonts: {'font_ui': {'family': 'Segoe UI', 'size': 13, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_title': {'family': 'Segoe UI', 'size': 20, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_button': {'family': 'Segoe UI', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_status': {'family': 'Segoe UI', 'size': 12, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}, 'font_small': {'family': 'Segoe UI', 'size': 9, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}}
+start_button_font_actual: {'family': 'Segoe UI', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'Segoe UI', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': 'Segoe UI Black', 'size': 14, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'Segoe UI Black', 'size': 14, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': 'Segoe UI Historic', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'Segoe UI Historic', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': 'Segoe UI Light', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'Segoe UI Light', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '@思源黑体 CN Normal', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '@思源黑体 CN Normal', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '思源黑体 CN Medium', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '思源黑体 CN Medium', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '思源黑体 CN Light', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '思源黑体 CN Light', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': 'Playbill', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'Playbill', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '方正舒体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '方正舒体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '方正姚体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '方正姚体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '黑体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '黑体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '黑体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '黑体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': 'System', 'size': 12, 'weight': 'bold', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
