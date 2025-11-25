@@ -452,6 +452,11 @@ class RecorderGUI:
         print(f"GUI 初始化: has_full_recorder = {self.has_full_recorder}, use_input_listeners = {self.use_input_listeners}")
         # 之前已在上面设置为可调整，这里保持兼容
         
+        # 倒计时相关变量
+        self.countdown_seconds = 0
+        self.countdown_timer_id = None
+        self.is_counting_down = False
+        
         # 设置工作目录
         try:
             # 在打包的应用中，使用用户目录下的 recordings 文件夹（避免权限问题）
@@ -625,6 +630,43 @@ class RecorderGUI:
             fg="blue"
         )
         self.time_label.pack()
+        
+        # 倒计时设置
+        countdown_frame = tk.Frame(self.root, pady=10)
+        countdown_frame.pack()
+        
+        tk.Label(
+            countdown_frame,
+            text="倒计时秒数:",
+            font=self.font_status if getattr(self, 'font_status', None) else ("Arial", 10)
+        ).pack(side=tk.LEFT, padx=5)
+        
+        self.countdown_var = tk.IntVar(value=0)  # 默认0秒，即不倒计时
+        countdown_spinbox = tk.Spinbox(
+            countdown_frame,
+            from_=0,
+            to=60,
+            textvariable=self.countdown_var,
+            width=10,
+            font=self.font_status if getattr(self, 'font_status', None) else ("Arial", 10)
+        )
+        countdown_spinbox.pack(side=tk.LEFT, padx=5)
+        
+        tk.Label(
+            countdown_frame,
+            text="(0表示不倒计时，直接开始)",
+            font=self.font_small if getattr(self, 'font_small', None) else ("Arial", 9),
+            fg="gray"
+        ).pack(side=tk.LEFT, padx=5)
+        
+        # 倒计时显示标签（初始隐藏）
+        self.countdown_label = tk.Label(
+            self.root,
+            text="",
+            font=self.font_title if getattr(self, 'font_title', None) else ("Arial", 24),
+            fg="red"
+        )
+        # 不立即pack，在倒计时开始时再显示
         
         # 按钮框架
         button_frame = tk.Frame(self.root, pady=30)
@@ -1309,10 +1351,104 @@ class RecorderGUI:
                 pass
     
     def start_recording(self):
-        """开始录制"""
+        """开始录制（带倒计时功能）"""
         if not self.recorder:
             messagebox.showerror("错误", "录制器未初始化")
             return
+        
+        # 如果正在倒计时，取消倒计时
+        if self.is_counting_down:
+            self._cancel_countdown()
+            return
+        
+        # 如果正在录制，不允许再次开始
+        if self.recorder.is_recording:
+            messagebox.showwarning("警告", "录制已在进行中！")
+            return
+        
+        # 获取倒计时秒数
+        countdown_seconds = self.countdown_var.get()
+        
+        # 如果倒计时为0，直接开始录制
+        if countdown_seconds <= 0:
+            self._do_start_recording()
+        else:
+            # 开始倒计时
+            self._start_countdown(countdown_seconds)
+    
+    def _start_countdown(self, seconds):
+        """开始倒计时"""
+        self.is_counting_down = True
+        self.countdown_seconds = seconds
+        
+        # 禁用开始按钮，改为"取消"功能
+        self.start_button.config(text="取消", state=tk.NORMAL, bg="#ff9800")
+        self.stop_button.config(state=tk.DISABLED)
+        
+        # 显示倒计时标签
+        self.countdown_label.pack(pady=20)
+        
+        # 更新状态
+        self.status_label.config(text=f"倒计时: {seconds} 秒后开始录制...", fg="orange")
+        
+        # 开始倒计时
+        self._update_countdown()
+    
+    def _update_countdown(self):
+        """更新倒计时显示"""
+        if not self.is_counting_down:
+            return
+        
+        if self.countdown_seconds > 0:
+            # 显示倒计时数字
+            self.countdown_label.config(text=str(self.countdown_seconds), fg="red")
+            self.status_label.config(text=f"倒计时: {self.countdown_seconds} 秒后开始录制...", fg="orange")
+            
+            # 更新窗口，确保显示
+            self.root.update_idletasks()
+            
+            # 减少倒计时
+            self.countdown_seconds -= 1
+            
+            # 1秒后再次更新
+            self.countdown_timer_id = self.root.after(1000, self._update_countdown)
+        else:
+            # 倒计时结束，开始录制
+            self.countdown_label.config(text="开始！", fg="green")
+            self.root.update_idletasks()
+            
+            # 短暂延迟后开始录制
+            self.root.after(500, self._do_start_recording)
+    
+    def _cancel_countdown(self):
+        """取消倒计时"""
+        self.is_counting_down = False
+        self.countdown_seconds = 0
+        
+        # 取消定时器
+        if self.countdown_timer_id:
+            self.root.after_cancel(self.countdown_timer_id)
+            self.countdown_timer_id = None
+        
+        # 隐藏倒计时标签
+        self.countdown_label.pack_forget()
+        
+        # 恢复开始按钮
+        self.start_button.config(text="开始录制", bg="#4CAF50")
+        
+        # 恢复状态
+        self.status_label.config(text="状态: 未录制", fg="gray")
+    
+    def _do_start_recording(self):
+        """实际开始录制"""
+        # 取消倒计时状态
+        self.is_counting_down = False
+        if self.countdown_timer_id:
+            self.root.after_cancel(self.countdown_timer_id)
+            self.countdown_timer_id = None
+        
+        # 隐藏倒计时标签
+        self.countdown_label.pack_forget()
         
         try:
             # 在开始录制前，检查是否需要切换到完整 recorder
@@ -1325,7 +1461,7 @@ class RecorderGUI:
             print(f"完整 recorder 是否可用: {self.has_full_recorder}")
             
             if self.recorder.start_recording():
-                self.start_button.config(state=tk.DISABLED)
+                self.start_button.config(state=tk.DISABLED, text="开始录制", bg="#4CAF50")
                 self.stop_button.config(state=tk.NORMAL)
                 self.status_label.config(text="状态: 正在录制...", fg="red")
                 
@@ -1347,7 +1483,7 @@ class RecorderGUI:
                     )
                 
                 self._update_timer()
-                messagebox.showinfo("提示", "录制已开始！")
+                # 不显示消息框，因为倒计时已经提示了
             else:
                 messagebox.showwarning("警告", "录制已在进行中！")
         except Exception as e:
@@ -1355,6 +1491,9 @@ class RecorderGUI:
             import traceback
             traceback.print_exc()
             messagebox.showerror("错误", f"启动录制失败: {str(e)}")
+            # 恢复按钮状态
+            self.start_button.config(state=tk.NORMAL, text="开始录制", bg="#4CAF50")
+            self.status_label.config(text="状态: 未录制", fg="gray")
     
     def _check_listener_status(self):
         """检查监听器状态"""
@@ -1403,9 +1542,13 @@ class RecorderGUI:
             messagebox.showerror("错误", "录制器未初始化")
             return
         
+        # 如果正在倒计时，先取消倒计时
+        if hasattr(self, 'is_counting_down') and self.is_counting_down:
+            self._cancel_countdown()
+        
         try:
             if self.recorder.stop_recording():
-                self.start_button.config(state=tk.NORMAL)
+                self.start_button.config(state=tk.NORMAL, text="开始录制", bg="#4CAF50")
                 self.stop_button.config(state=tk.DISABLED)
                 self.status_label.config(text="状态: 录制已停止", fg="green")
                 self.time_label.config(text="录制时长: 00:00:00")
