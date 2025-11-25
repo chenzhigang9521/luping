@@ -356,3 +356,182 @@ delayed_detected_embedded_family: Noto Serif TC
 applied_embedded_family: Noto Serif TC
 start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
 stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+applied_embedded_family: Noto Serif TC
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 1)
+scheduled next attempt=2
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 1)
+scheduled next attempt=2
+_apply_embedded_font_later attempt=2
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 2)
+scheduled next attempt=3
+_apply_embedded_font_later attempt=3
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 3)
+scheduled next attempt=4
+_apply_embedded_font_later attempt=4
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 4)
+scheduled next attempt=5
+_apply_embedded_font_later attempt=5
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 5)
+scheduled next attempt=6
+_apply_embedded_font_later attempt=6
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 6)
+嵌入字体检测达到最大重试次数，放弃
+start_button_font_actual: {'family': '方正大黑简体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '方正大黑简体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_extract start: app_path=C:\Users\1\Desktop\luping
+check fonts candidate: C:\Users\1\Desktop\luping\fonts exists=False
+check fonts candidate: C:\Users\1\Desktop\luping\_internal\fonts exists=False
+no fonts dir found in candidates, aborting extract
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+start_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+stop_button_font_actual: {'family': '新宋体', 'size': 14, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0}
+_apply_embedded_font_later attempt=1
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 1)
+scheduled next attempt=2
+_apply_embedded_font_later attempt=2
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 2)
+scheduled next attempt=3
+_apply_embedded_font_later attempt=3
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 3)
+scheduled next attempt=4
+_apply_embedded_font_later attempt=4
+用户已选择非嵌入字体: 新宋体，将保持用户选择
+delayed_families_count: 475
+delayed_detected_embedded_family: Noto Serif TC
+user_chose_non_embedded: True
+保持用户选择的字体: 新宋体 (attempt 4)
+scheduled next attempt=5

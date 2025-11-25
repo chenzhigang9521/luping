@@ -487,19 +487,92 @@ class RecorderGUI:
         
         # 创建UI
         self._create_ui()
+        
+        # 确保 UI 完全创建
+        self.root.update_idletasks()
 
         # 自动应用默认 UI 字体（静默），确保启动时控件使用选定的默认字体
+        # 确保字体选择器的值设置为默认字体
         try:
-            # Try to apply immediately (widgets exist after _create_ui)
+            if hasattr(self, '_font_var') and hasattr(self, '_ui_font_family') and self._ui_font_family:
+                self._font_var.set(self._ui_font_family)
+        except Exception:
+            pass
+        
+        # 强制应用字体到所有控件
+        def apply_default_font():
+            """应用默认字体到所有控件"""
             try:
-                self._apply_font_from_selector(show_message=False)
-            except Exception:
-                pass
-            # Also schedule a shortly-delayed apply in case some widgets initialize slightly later
-            try:
-                self.root.after(100, lambda: self._apply_font_from_selector(show_message=False))
-            except Exception:
-                pass
+                if hasattr(self, '_ui_font_family') and self._ui_font_family:
+                    chosen = self._ui_font_family
+                    # 确保 _font_var 的值正确
+                    if hasattr(self, '_font_var'):
+                        try:
+                            self._font_var.set(chosen)
+                        except Exception:
+                            pass
+                    
+                    # 更新共享字体对象
+                    if getattr(self, 'font_ui', None):
+                        self.font_ui.configure(family=chosen, weight='normal')
+                    if getattr(self, 'font_title', None):
+                        self.font_title.configure(family=chosen, weight='normal')
+                    if getattr(self, 'font_button', None):
+                        self.font_button.configure(family=chosen, weight='normal')
+                    if getattr(self, 'font_status', None):
+                        self.font_status.configure(family=chosen, weight='normal')
+                    if getattr(self, 'font_small', None):
+                        self.font_small.configure(family=chosen, weight='normal')
+                    
+                    # 更新 Tk 命名字体
+                    for named in ('TkDefaultFont', 'TkTextFont', 'TkMenuFont', 'TkHeadingFont'):
+                        try:
+                            f = tkfont.nametofont(named)
+                            f.configure(family=chosen, weight='normal')
+                        except Exception:
+                            pass
+                    
+                    # 强制更新所有已知控件
+                    widgets_to_update = [
+                        ('title_label', 'font_title'),
+                        ('status_label', 'font_status'),
+                        ('time_label', 'font_status'),
+                        ('listener_status_label', 'font_small'),
+                        ('start_button', 'font_button'),
+                        ('stop_button', 'font_button'),
+                        ('output_label', 'font_ui'),
+                    ]
+                    
+                    for widget_name, font_name in widgets_to_update:
+                        widget = getattr(self, widget_name, None)
+                        font_obj = getattr(self, font_name, None)
+                        if widget and font_obj:
+                            try:
+                                widget.configure(font=font_obj)
+                            except Exception:
+                                pass
+                    
+                    # 调用完整的应用方法以确保所有设置都生效
+                    if hasattr(self, '_apply_font_from_selector'):
+                        try:
+                            self._apply_font_from_selector(show_message=False)
+                        except Exception:
+                            pass
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+        
+        # 立即应用一次
+        try:
+            apply_default_font()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+        
+        # 延迟应用，确保所有控件都已完全初始化
+        try:
+            self.root.after(50, apply_default_font)
+            self.root.after(200, apply_default_font)
         except Exception:
             pass
 
@@ -517,13 +590,13 @@ class RecorderGUI:
         """创建用户界面"""
         # 标题
         title_font = self.font_title if getattr(self, 'font_title', None) else (self._ui_font_family or "Arial", 20)
-        title_label = tk.Label(
+        self.title_label = tk.Label(
             self.root,
             text="录屏软件",
             font=title_font,
             pady=20
         )
-        title_label.pack()
+        self.title_label.pack()
 
         # 显示当前使用的字体（用于诊断打包后字体回退问题）
         # (removed) small font-info label under title per user request
@@ -732,6 +805,8 @@ class RecorderGUI:
         """在 Tk 初始化完成后延迟运行，重试检测嵌入字体家族并应用。
         采用多次重试策略（每次间隔 500ms，最多 6 次），并会更新共享的 tkfont.Font 对象。
         日志写入 `font_register.log` 与 `font_debug.txt`。
+        
+        注意：如果用户已经选择了默认字体（如"新宋体"），不会被嵌入字体覆盖。
         """
         try:
             internal_dir = Path(application_path) / '_internal'
@@ -745,6 +820,19 @@ class RecorderGUI:
 
             with open(log_path, 'a', encoding='utf-8') as lf:
                 lf.write(f"_apply_embedded_font_later attempt={attempt}\n")
+
+            # 检查当前用户选择的字体
+            current_font = getattr(self, '_ui_font_family', None)
+            # 如果用户已经选择了非嵌入字体（如"新宋体"），不要覆盖
+            user_chose_non_embedded = False
+            if current_font:
+                # 检查当前字体是否是嵌入字体
+                is_embedded = 'noto' in current_font.lower() or 'noto sans' in current_font.lower()
+                if not is_embedded:
+                    # 用户选择了非嵌入字体，应该保持用户的选择
+                    user_chose_non_embedded = True
+                    with open(log_path, 'a', encoding='utf-8') as lf:
+                        lf.write(f"用户已选择非嵌入字体: {current_font}，将保持用户选择\n")
 
             try:
                 fams = list(tkfont.families())
@@ -762,9 +850,19 @@ class RecorderGUI:
             with open(log_path, 'a', encoding='utf-8') as lf:
                 lf.write(f"delayed_families_count: {len(fams)}\n")
                 lf.write(f"delayed_detected_embedded_family: {embedded_family}\n")
+                lf.write(f"user_chose_non_embedded: {user_chose_non_embedded}\n")
 
-            if embedded_family:
+            # 只有在检测到嵌入字体且用户没有选择非嵌入字体时才应用
+            if embedded_family and not user_chose_non_embedded:
                 try:
+                    # 更新 _ui_font_family 和 _font_var 以保持一致性
+                    self._ui_font_family = embedded_family
+                    if hasattr(self, '_font_var'):
+                        try:
+                            self._font_var.set(embedded_family)
+                        except Exception:
+                            pass
+                    
                     # apply to named fonts
                     for named in ('TkDefaultFont', 'TkTextFont', 'TkMenuFont', 'TkHeadingFont'):
                         try:
@@ -812,6 +910,26 @@ class RecorderGUI:
                                 self.font_small.configure(family=embedded_family)
                     except Exception:
                         pass
+                    
+                    # 更新所有控件的字体
+                    widgets_to_update = [
+                        ('title_label', 'font_title'),
+                        ('status_label', 'font_status'),
+                        ('time_label', 'font_status'),
+                        ('listener_status_label', 'font_small'),
+                        ('start_button', 'font_button'),
+                        ('stop_button', 'font_button'),
+                        ('output_label', 'font_ui'),
+                    ]
+                    
+                    for widget_name, font_name in widgets_to_update:
+                        widget = getattr(self, widget_name, None)
+                        font_obj = getattr(self, font_name, None)
+                        if widget and font_obj:
+                            try:
+                                widget.configure(font=font_obj)
+                            except Exception:
+                                pass
 
                     # update visible label if present
                     try:
@@ -833,8 +951,12 @@ class RecorderGUI:
                     with open(log_path, 'a', encoding='utf-8') as lf:
                         lf.write(f"apply_embedded_family 失败: {e}\n")
             else:
-                with open(log_path, 'a', encoding='utf-8') as lf:
-                    lf.write(f"未检测到嵌入字体家族 (attempt {attempt})\n")
+                if user_chose_non_embedded:
+                    with open(log_path, 'a', encoding='utf-8') as lf:
+                        lf.write(f"保持用户选择的字体: {current_font} (attempt {attempt})\n")
+                else:
+                    with open(log_path, 'a', encoding='utf-8') as lf:
+                        lf.write(f"未检测到嵌入字体家族 (attempt {attempt})\n")
                 # schedule retry
                 if attempt < max_attempts:
                     self._font_apply_attempt = attempt + 1
@@ -872,9 +994,24 @@ class RecorderGUI:
         try:
             chosen = None
             try:
-                chosen = self._font_var.get()
+                if hasattr(self, '_font_var'):
+                    chosen = self._font_var.get()
             except Exception:
                 pass
+            
+            # 如果 _font_var 没有值，尝试使用 _ui_font_family 作为后备
+            if not chosen:
+                try:
+                    if hasattr(self, '_ui_font_family') and self._ui_font_family:
+                        chosen = self._ui_font_family
+                        # 同时更新 _font_var，确保同步
+                        if hasattr(self, '_font_var'):
+                            try:
+                                self._font_var.set(chosen)
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
 
             if not chosen:
                 try:
@@ -967,7 +1104,7 @@ class RecorderGUI:
 
                 # try to reconfigure known widgets
                 widget_map = [
-                    'start_button', 'stop_button', 'change_dir_button', 'open_dir_button',
+                    'title_label', 'start_button', 'stop_button', 'change_dir_button', 'open_dir_button',
                     'status_label', 'listener_status_label', 'time_label', 'font_label', 'output_label'
                 ]
                 for name in widget_map:
@@ -975,7 +1112,12 @@ class RecorderGUI:
                         w = getattr(self, name, None)
                         if w is None:
                             continue
-                        if name in ('start_button', 'stop_button') and getattr(self, 'font_button', None):
+                        if name == 'title_label' and getattr(self, 'font_title', None):
+                            try:
+                                w.configure(font=self.font_title)
+                            except Exception:
+                                pass
+                        elif name in ('start_button', 'stop_button') and getattr(self, 'font_button', None):
                             try:
                                 w.configure(font=self.font_button)
                             except Exception:
