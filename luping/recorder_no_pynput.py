@@ -18,9 +18,20 @@ import sys
 class ScreenRecorder:
     """屏幕录制器（仅录制屏幕，不记录键盘和鼠标）"""
     
-    def __init__(self, output_dir="recordings"):
+    def __init__(self, output_dir="recordings", scale_factor=1.0, target_fps=30.0):
+        """
+        初始化录屏器
+        
+        Args:
+            output_dir: 输出目录
+            scale_factor: 分辨率缩放因子 (0.5 = 半分辨率, 1.0 = 原始分辨率)
+            target_fps: 目标帧率 (默认30帧)
+        """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        
+        self.scale_factor = max(0.25, min(1.0, scale_factor))
+        self.target_fps = max(15.0, min(60.0, target_fps))
         
         self.is_recording = False
         self.recording_thread = None
@@ -36,6 +47,8 @@ class ScreenRecorder:
         
         # 延迟初始化 mss，避免在导入时就初始化
         self.sct = None
+        self.screen_width = None
+        self.screen_height = None
         self.width = None
         self.height = None
         
@@ -44,17 +57,24 @@ class ScreenRecorder:
             self.sct = mss.mss()
             # 获取屏幕尺寸
             monitor = self.sct.monitors[1]  # 主显示器
-            self.width = monitor["width"]
-            self.height = monitor["height"]
-            print(f"检测到屏幕分辨率: {self.width}x{self.height}")
-            # 高分辨率提示
-            if self.width >= 2560 or self.height >= 1440:
-                print(f"✓ 支持高分辨率录制: {self.width}x{self.height}")
+            self.screen_width = monitor["width"]
+            self.screen_height = monitor["height"]
+            # 计算录制分辨率
+            self.width = int(self.screen_width * self.scale_factor)
+            self.height = int(self.screen_height * self.scale_factor)
+            self.width = self.width - (self.width % 2)
+            self.height = self.height - (self.height % 2)
+            print(f"检测到屏幕分辨率: {self.screen_width}x{self.screen_height}")
+            if self.scale_factor < 1.0:
+                print(f"录制分辨率: {self.width}x{self.height} (缩放因子: {self.scale_factor})")
+            print(f"目标帧率: {self.target_fps} FPS")
         except Exception as e:
             print(f"警告: 初始化屏幕捕获失败: {e}")
             # 使用默认值
-            self.width = 1920
-            self.height = 1080
+            self.screen_width = 1920
+            self.screen_height = 1080
+            self.width = int(1920 * self.scale_factor)
+            self.height = int(1080 * self.scale_factor)
             print(f"使用默认分辨率: {self.width}x{self.height}")
         
         # 事件队列（虽然不记录事件，但保持接口一致）
@@ -104,7 +124,7 @@ class ScreenRecorder:
         # 检查 OpenCV 版本和功能
         print(f"OpenCV 版本: {cv2.__version__}")
         print(f"准备初始化视频写入器: {self.video_path}")
-        print(f"分辨率: {self.width}x{self.height}, FPS: 30")
+        print(f"分辨率: {self.width}x{self.height}, FPS: {self.target_fps}")
         
         # 增加更兼容的编码器选项，优先使用通用的 mp4v（MP4）作为首选
         codecs_to_try = [
@@ -142,7 +162,7 @@ class ScreenRecorder:
                 self.video_writer = cv2.VideoWriter(
                     video_path_str,
                     fourcc,
-                    30.0,  # FPS
+                    self.target_fps,  # FPS
                     (int(self.width), int(self.height)),
                     True  # isColor=True (BGR 图像)
                 )
@@ -327,7 +347,7 @@ class ScreenRecorder:
                 print("✗ 无法初始化屏幕捕获（mss）")
                 return
         frame_count = 0
-        target_fps = 30.0
+        target_fps = self.target_fps
         frame_interval = 1.0 / target_fps  # 每帧间隔时间（秒）
         
         print(f"开始录制屏幕: 分辨率 {self.width}x{self.height}, FPS {target_fps}")
@@ -353,12 +373,12 @@ class ScreenRecorder:
                 screenshot = sct.grab(monitor)
                 img = np.array(screenshot)
                 
-                # 转换颜色空间（BGRA to BGR）
-                img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+                # 转换颜色空间（BGRA to BGR）- 使用更快的方式
+                img = img[:, :, :3]  # 直接切片去掉Alpha通道，比cvtColor更快
                 
-                # 确保图像尺寸正确
+                # 确保图像尺寸正确（仅在必要时resize）
                 if img.shape[1] != self.width or img.shape[0] != self.height:
-                    img = cv2.resize(img, (self.width, self.height))
+                    img = cv2.resize(img, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
                 
                 # 写入视频
                 if self.use_ffmpeg_pipe:

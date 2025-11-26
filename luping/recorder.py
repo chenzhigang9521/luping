@@ -15,6 +15,17 @@ import subprocess
 import shutil
 import sys
 
+# 尝试导入 dxcam（Windows GPU加速屏幕捕获）
+_dxcam = None
+_dxcam_available = False
+if sys.platform == 'win32':
+    try:
+        import dxcam
+        _dxcam = dxcam
+        _dxcam_available = True
+    except ImportError:
+        pass
+
 # 延迟导入 pynput，避免在导入时就初始化导致崩溃
 _keyboard = None
 _mouse = None
@@ -72,9 +83,20 @@ def _get_mouse():
 class ScreenRecorder:
     """屏幕录制器"""
     
-    def __init__(self, output_dir="recordings"):
+    def __init__(self, output_dir="recordings", scale_factor=1.0, target_fps=30.0):
+        """
+        初始化录屏器
+        
+        Args:
+            output_dir: 输出目录
+            scale_factor: 分辨率缩放因子 (0.5 = 半分辨率, 1.0 = 原始分辨率)
+            target_fps: 目标帧率 (默认30帧)
+        """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        
+        self.scale_factor = max(0.25, min(1.0, scale_factor))  # 限制在 0.25-1.0 之间
+        self.target_fps = max(15.0, min(60.0, target_fps))  # 限制在 15-60 之间
         
         self.is_recording = False
         self.recording_thread = None
@@ -93,25 +115,40 @@ class ScreenRecorder:
         
         # 延迟初始化 mss，避免在导入时就初始化
         self.sct = None
-        self.width = None
-        self.height = None
+        self.screen_width = None  # 原始屏幕宽度
+        self.screen_height = None  # 原始屏幕高度
+        self.width = None  # 录制宽度（可能缩放后）
+        self.height = None  # 录制高度（可能缩放后）
         
         # 初始化屏幕捕获（延迟到需要时）
         try:
             self.sct = mss.mss()
             # 获取屏幕尺寸
             monitor = self.sct.monitors[1]  # 主显示器
-            self.width = monitor["width"]
-            self.height = monitor["height"]
-            print(f"检测到屏幕分辨率: {self.width}x{self.height}")
+            self.screen_width = monitor["width"]
+            self.screen_height = monitor["height"]
+            # 计算录制分辨率
+            self.width = int(self.screen_width * self.scale_factor)
+            self.height = int(self.screen_height * self.scale_factor)
+            # 确保宽高是偶数（某些编码器要求）
+            self.width = self.width - (self.width % 2)
+            self.height = self.height - (self.height % 2)
+            print(f"检测到屏幕分辨率: {self.screen_width}x{self.screen_height}")
+            if self.scale_factor < 1.0:
+                print(f"录制分辨率: {self.width}x{self.height} (缩放因子: {self.scale_factor})")
+            print(f"目标帧率: {self.target_fps} FPS")
             # 高分辨率提示
-            if self.width >= 2560 or self.height >= 1440:
-                print(f"✓ 支持高分辨率录制: {self.width}x{self.height}")
+            if self.screen_width >= 2560 or self.screen_height >= 1440:
+                print(f"✓ 支持高分辨率录制")
+                if self.scale_factor == 1.0:
+                    print(f"  提示: 高分辨率可能导致帧率不足，建议设置 scale_factor=0.5")
         except Exception as e:
             print(f"警告: 初始化屏幕捕获失败: {e}")
             # 使用默认值
-            self.width = 1920
-            self.height = 1080
+            self.screen_width = 1920
+            self.screen_height = 1080
+            self.width = int(1920 * self.scale_factor)
+            self.height = int(1080 * self.scale_factor)
             print(f"使用默认分辨率: {self.width}x{self.height}")
         
         # 事件队列
@@ -165,102 +202,87 @@ class ScreenRecorder:
         # 检查 OpenCV 版本和功能
         print(f"OpenCV 版本: {cv2.__version__}")
         print(f"准备初始化视频写入器: {self.video_path}")
-        print(f"分辨率: {self.width}x{self.height}, FPS: 30")
+        print(f"分辨率: {self.width}x{self.height}, FPS: {self.target_fps}")
         
-        # 尝试多个编码器，按优先级顺序
-        # 优先尝试 MP4 兼容的编码器
-        # 增加更兼容的编码器选项
-        # 优先尝试 AVI+MJPG，因为在无 ffmpeg 的环境下更可能生成可播放文件
-        codecs_to_try = [
-            ('MJPG', 'MJPG', '.avi'),  # Motion JPEG，AVI 格式（兼容性好）
-            ('XVID', 'XVID', '.avi'),  # XVID，AVI 格式
-            ('DIVX', 'DIVX', '.avi'),  # DivX，AVI 格式
-            ('MP4V', 'mp4v', '.mp4'),  # 通用 MP4 编码器
-            ('H264', 'H264', '.mp4'),  # H.264 编码器
-            ('X264', 'X264', '.mp4'),  # X.264 编码器
-            ('avc1', 'avc1', '.mp4'),  # AVC1 编码器
-        ]
-        self.video_writer = None
-        last_error = None
-        
-        for codec_name, fourcc_code, file_ext in codecs_to_try:
-            try:
-                # 根据编码器调整文件扩展名
-                if file_ext == '.mp4' and self.video_path.suffix != '.mp4':
-                    # 如果尝试 MP4 编码器，确保文件扩展名是 .mp4
-                    video_path_actual = self.video_path.with_suffix('.mp4')
-                elif file_ext == '.avi' and self.video_path.suffix != '.avi':
-                    # 如果尝试 AVI 编码器，使用 .avi 扩展名
-                    video_path_actual = self.video_path.with_suffix('.avi')
-                else:
-                    video_path_actual = self.video_path
-                
-                fourcc = cv2.VideoWriter_fourcc(*fourcc_code)
-                print(f"尝试使用 {codec_name} 编码器 (FourCC: {fourcc_code}, 格式: {file_ext})...")
-                
-                # 使用绝对路径
-                video_path_str = str(video_path_actual.absolute())
-                print(f"  视频文件路径: {video_path_str}")
-                
-                self.video_writer = cv2.VideoWriter(
-                    video_path_str,
-                    fourcc,
-                    30.0,  # FPS
-                    (int(self.width), int(self.height)),
-                    True  # isColor=True (BGR 图像)
-                )
-                
-                # 测试写入器是否可用
-                if self.video_writer.isOpened():
-                    print(f"  VideoWriter.isOpened() = True")
-                    # 不依赖 VideoWriter.write() 的返回值（通常为 None）来判断是否可写。
-                    # 仅通过 isOpened() 判断并记录选择的编码器与路径。
-                    print(f"✓ 使用 {codec_name} 编码器初始化视频写入器成功")
-                    # 更新视频路径（可能因为编码器改变了扩展名）
-                    self.video_path = video_path_actual
-                    # 记录写入器已打开（调试信息）
-                    self._writer_opened = True
-                    # 保持 video_writer 已打开以继续写帧
-                    break
-                else:
-                    print(f"⚠️ {codec_name} 编码器初始化失败: VideoWriter.isOpened() = False")
+        # 优先尝试 FFmpeg 管道（速度最快，能保证帧率）
+        print("尝试使用 FFmpeg 管道写入（高性能模式）...")
+        ffmpeg_ok = self._try_start_ffmpeg(self.video_path)
+        if ffmpeg_ok:
+            self.use_ffmpeg_pipe = True
+            print(f"✓ 使用 FFmpeg 管道写入: {self.video_path}")
+        else:
+            print("FFmpeg 不可用，回退到 OpenCV 编码器...")
+            # 尝试多个编码器，按优先级顺序
+            codecs_to_try = [
+                ('MJPG', 'MJPG', '.avi'),  # Motion JPEG，AVI 格式（兼容性好）
+                ('XVID', 'XVID', '.avi'),  # XVID，AVI 格式
+                ('DIVX', 'DIVX', '.avi'),  # DivX，AVI 格式
+                ('MP4V', 'mp4v', '.mp4'),  # 通用 MP4 编码器
+                ('H264', 'H264', '.mp4'),  # H.264 编码器
+                ('X264', 'X264', '.mp4'),  # X.264 编码器
+                ('avc1', 'avc1', '.mp4'),  # AVC1 编码器
+            ]
+            self.video_writer = None
+            last_error = None
+            
+            for codec_name, fourcc_code, file_ext in codecs_to_try:
+                try:
+                    # 根据编码器调整文件扩展名
+                    if file_ext == '.mp4' and self.video_path.suffix != '.mp4':
+                        video_path_actual = self.video_path.with_suffix('.mp4')
+                    elif file_ext == '.avi' and self.video_path.suffix != '.avi':
+                        video_path_actual = self.video_path.with_suffix('.avi')
+                    else:
+                        video_path_actual = self.video_path
+                    
+                    fourcc = cv2.VideoWriter_fourcc(*fourcc_code)
+                    print(f"尝试使用 {codec_name} 编码器 (FourCC: {fourcc_code}, 格式: {file_ext})...")
+                    
+                    video_path_str = str(video_path_actual.absolute())
+                    print(f"  视频文件路径: {video_path_str}")
+                    
+                    self.video_writer = cv2.VideoWriter(
+                        video_path_str,
+                        fourcc,
+                        self.target_fps,
+                        (int(self.width), int(self.height)),
+                        True
+                    )
+                    
+                    if self.video_writer.isOpened():
+                        print(f"  VideoWriter.isOpened() = True")
+                        print(f"✓ 使用 {codec_name} 编码器初始化视频写入器成功")
+                        self.video_path = video_path_actual
+                        self._writer_opened = True
+                        break
+                    else:
+                        print(f"⚠️ {codec_name} 编码器初始化失败")
+                        if self.video_writer:
+                            try:
+                                self.video_writer.release()
+                            except:
+                                pass
+                        self.video_writer = None
+                except Exception as e:
+                    last_error = str(e)
+                    print(f"⚠️ {codec_name} 编码器不可用: {e}")
                     if self.video_writer:
                         try:
                             self.video_writer.release()
                         except:
                             pass
-                    self.video_writer = None
-            except Exception as e:
-                last_error = str(e)
-                print(f"⚠️ {codec_name} 编码器不可用: {e}")
-                import traceback
-                traceback.print_exc()
-                if self.video_writer:
-                    try:
-                        self.video_writer.release()
-                    except:
-                        pass
-                    self.video_writer = None
-                continue
-        
-        if self.video_writer is None or not self.video_writer.isOpened():
-            # 如果所有编码器都失败，优先尝试使用系统 ffmpeg 通过管道编码
-            print("⚠️ 所有 OpenCV 视频编码器不可用，尝试使用系统 ffmpeg 管道写入...")
-            ffmpeg_ok = self._try_start_ffmpeg(self.video_path)
-            if ffmpeg_ok:
-                self.use_ffmpeg_pipe = True
-                print(f"✓ 使用 FFmpeg 管道写入: {self.video_path}")
-            else:
+                        self.video_writer = None
+                    continue
+            
+            if self.video_writer is None or not self.video_writer.isOpened():
                 # 回退到图像序列方案
-                print("⚠️ FFmpeg 不可用或启动失败，回退到图像序列保存")
+                print("⚠️ 所有编码器不可用，回退到图像序列保存")
                 self.video_writer = None
                 self.use_image_sequence = True
                 self.frame_dir = self.video_path.parent / f"{self.video_path.stem}_frames"
                 self.frame_dir.mkdir(parents=True, exist_ok=True)
                 self.frame_count = 0
                 print(f"✓ 图像序列将保存到: {self.frame_dir}")
-                print("  提示: 录制完成后，可以使用 FFmpeg 或其他工具将图像序列转换为视频")
-                print("  命令示例: ffmpeg -r 30 -i frame_%06d.jpg -c:v libx264 output.mp4")
         
         # 延迟加载并启动键盘和鼠标监听
         # 在 macOS 上，pynput 的某些操作可能导致崩溃，所以完全可选
@@ -403,6 +425,67 @@ class ScreenRecorder:
                 print(f"⚠️ 处理图像序列时发生错误: {e}")
                 import traceback
                 traceback.print_exc()
+        elif self.use_ffmpeg_pipe:
+            # 关闭 FFmpeg 管道
+            print("正在关闭 FFmpeg 管道并等待进程完成...")
+            self._stop_ffmpeg()
+            print(f"✓ FFmpeg 管道已关闭，输出文件: {self.video_path}")
+            
+            # 检查是否需要修正帧率
+            if hasattr(self, '_actual_recording_duration') and hasattr(self, '_frames_written'):
+                actual_duration = self._actual_recording_duration
+                frame_count = self._frames_written
+                if actual_duration > 0 and frame_count > 0:
+                    actual_fps = frame_count / actual_duration
+                    # 如果实际帧率与30fps差异大，需要重新编码
+                    if abs(actual_fps - 30.0) > 2.0:
+                        print(f"检测到帧率不匹配: 实际FPS={actual_fps:.2f}, 目标FPS=30.0")
+                        print(f"正在重新编码以修正视频时长...")
+                        try:
+                            import subprocess
+                            ff = self._find_ffmpeg()
+                            if ff:
+                                # 创建临时文件
+                                temp_path = self.video_path.with_suffix('.temp.mp4')
+                                # 重命名原文件
+                                import os
+                                os.rename(str(self.video_path), str(temp_path))
+                                # 用实际帧率作为输入，输出30fps（通过插帧补足）
+                                # 使用 minterpolate 滤镜进行运动插值，或简单复制帧
+                                cmd = [
+                                    ff, '-y',
+                                    '-r', str(actual_fps),  # 输入帧率设为实际帧率
+                                    '-i', str(temp_path),
+                                    '-filter:v', 'fps=30',  # 输出30fps，自动复制帧补足
+                                    '-c:v', 'libx264',
+                                    '-pix_fmt', 'yuv420p',
+                                    '-preset', 'veryfast',
+                                    str(self.video_path)
+                                ]
+                                print(f"运行: {' '.join(cmd)}")
+                                kwargs = {'capture_output': True, 'text': True, 'timeout': 300}
+                                if sys.platform == 'win32':
+                                    kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+                                proc = subprocess.run(cmd, **kwargs)
+                                if proc.returncode == 0:
+                                    print(f"✓ 视频修正成功（已插帧到30fps）")
+                                    # 删除临时文件
+                                    try:
+                                        os.unlink(str(temp_path))
+                                    except:
+                                        pass
+                                else:
+                                    print(f"✗ 视频修正失败: {proc.stderr}")
+                                    # 恢复原文件
+                                    try:
+                                        os.rename(str(temp_path), str(self.video_path))
+                                    except:
+                                        pass
+                        except Exception as e:
+                            print(f"⚠️ 修正视频时出错: {e}")
+            
+            # 验证视频文件
+            self._verify_video_file()
         elif self.video_writer:
             print("正在释放视频写入器...")
             try:
@@ -595,27 +678,75 @@ class ScreenRecorder:
     
     def _record_screen(self):
         """录制屏幕（在单独线程中运行）"""
-        # 在录制线程中创建 mss 实例，避免将主线程的 GDI 句柄传入子线程
-        try:
-            sct = mss.mss()
-            monitor = sct.monitors[1]
-        except Exception:
-            if self.sct:
-                sct = self.sct
+        # 优先使用 dxcam（Windows GPU加速），否则回退到 mss
+        use_dxcam = False
+        camera = None
+        sct = None
+        monitor = None
+        
+        if _dxcam_available:
+            try:
+                camera = _dxcam.create(output_color="BGR")
+                camera.start(target_fps=int(self.target_fps), video_mode=True)
+                use_dxcam = True
+                print(f"✓ 使用 dxcam GPU加速屏幕捕获")
+            except Exception as e:
+                print(f"⚠️ dxcam 初始化失败，回退到 mss: {e}")
+                camera = None
+        
+        if not use_dxcam:
+            # 回退到 mss
+            try:
+                sct = mss.mss()
                 monitor = sct.monitors[1]
-            else:
-                print("✗ 无法初始化屏幕捕获（mss）")
-                return
+                print(f"使用 mss 屏幕捕获")
+            except Exception:
+                if self.sct:
+                    sct = self.sct
+                    monitor = sct.monitors[1]
+                else:
+                    print("✗ 无法初始化屏幕捕获")
+                    return
+        
         frame_count = 0
-        target_fps = 30.0
+        target_fps = self.target_fps
         frame_interval = 1.0 / target_fps  # 每帧间隔时间（秒）
         
         print(f"开始录制屏幕: 分辨率 {self.width}x{self.height}, FPS {target_fps}")
         
-        # 使用基于时间戳的精确帧率控制
-        # 记录录制开始时间（用于计算实际录制时长）
+        # 使用帧缓冲队列实现异步写入，提高帧率
+        from queue import Queue
+        import threading
+        
+        frame_queue = Queue(maxsize=90)  # 缓冲最多90帧（3秒）
+        write_error = [None]
+        
+        def write_frames():
+            """异步写入帧的线程"""
+            while True:
+                item = frame_queue.get()
+                if item is None:  # 结束信号
+                    break
+                img, fc = item
+                try:
+                    if self.use_image_sequence:
+                        frame_filename = self.frame_dir / f"frame_{fc:06d}.jpg"
+                        cv2.imwrite(str(frame_filename), img, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                    elif self.use_ffmpeg_pipe:
+                        self._write_frame_ffmpeg(img)
+                    elif self.video_writer and self.video_writer.isOpened():
+                        self.video_writer.write(img)
+                except Exception as e:
+                    write_error[0] = e
+                frame_queue.task_done()
+        
+        # 启动写入线程
+        write_thread = threading.Thread(target=write_frames, daemon=True)
+        write_thread.start()
+        
+        # 记录录制开始时间
         recording_start_time = time.time()
-        next_frame_time = recording_start_time  # 下一帧应该写入的时间
+        next_frame_time = recording_start_time
         
         while self.is_recording:
             try:
@@ -625,66 +756,60 @@ class ScreenRecorder:
                 wait_time = next_frame_time - current_time
                 if wait_time > 0:
                     time.sleep(wait_time)
-                    current_time = time.time()  # 更新当前时间
+                    current_time = time.time()
                 
                 # 捕获屏幕
-                screenshot = sct.grab(monitor)
-                img = np.array(screenshot)
-                
-                # 转换颜色空间（BGRA to BGR）
-                img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-                
-                # 确保图像尺寸正确
-                if img.shape[1] != self.width or img.shape[0] != self.height:
-                    img = cv2.resize(img, (self.width, self.height))
-                
-                # 写入视频或图像序列
-                if self.use_image_sequence:
-                    # 备用方案：保存为图像序列
-                    frame_filename = self.frame_dir / f"frame_{self.frame_count:06d}.jpg"
-                    cv2.imwrite(str(frame_filename), img, [cv2.IMWRITE_JPEG_QUALITY, 95])
-                    frame_count += 1
-                    self.frame_count = frame_count
-                    if frame_count % 300 == 0:  # 每10秒打印一次
-                        elapsed_time = time.time() - recording_start_time
-                        actual_fps = frame_count / elapsed_time if elapsed_time > 0 else 0
-                        print(f"已保存 {frame_count} 帧图像 (实际时长: {elapsed_time:.1f} 秒, 实际FPS: {actual_fps:.2f})")
-                elif self.use_ffmpeg_pipe:
-                    # 将原始 BGR 帧写入 FFmpeg stdin
-                    try:
-                        self._write_frame_ffmpeg(img)
-                    except Exception as e:
-                        print(f"⚠️ 写入 FFmpeg 帧异常 (帧 {frame_count}): {e}")
-                    frame_count += 1
-                elif self.video_writer and self.video_writer.isOpened():
-                    # VideoWriter.write() 通常不返回写入结果（返回 None），
-                    # 因此不依赖其返回值判断成功与否，只执行写入并统计帧数。
-                    try:
-                        self.video_writer.write(img)
-                    except Exception as e:
-                        print(f"⚠️ 警告: 写入视频帧时发生异常 (帧 {frame_count}): {e}")
-                    frame_count += 1
-                    if frame_count % 300 == 0:  # 每10秒打印一次
-                        elapsed_time = time.time() - recording_start_time
-                        actual_fps = frame_count / elapsed_time if elapsed_time > 0 else 0
-                        print(f"已录制 {frame_count} 帧 (实际时长: {elapsed_time:.1f} 秒, 实际FPS: {actual_fps:.2f})")
+                if use_dxcam and camera:
+                    img = camera.get_latest_frame()
+                    if img is None:
+                        continue  # 跳过空帧
                 else:
-                    print("⚠️ 警告: 视频写入器不可用")
-                    break
+                    screenshot = sct.grab(monitor)
+                    img = np.array(screenshot)
+                    # 转换颜色空间（BGRA to BGR）
+                    img = img[:, :, :3]
+                
+                # 确保图像是连续的内存布局（FFmpeg需要）
+                if not img.flags['C_CONTIGUOUS']:
+                    img = np.ascontiguousarray(img)
+                
+                # 异步写入
+                try:
+                    frame_queue.put_nowait((img, frame_count))
+                    frame_count += 1
+                    if self.use_image_sequence:
+                        self.frame_count = frame_count
+                except:
+                    # 队列满了，跳过这一帧
+                    pass
+                
+                if frame_count % 300 == 0:
+                    elapsed_time = time.time() - recording_start_time
+                    actual_fps = frame_count / elapsed_time if elapsed_time > 0 else 0
+                    print(f"已录制 {frame_count} 帧 (实际时长: {elapsed_time:.1f} 秒, 实际FPS: {actual_fps:.2f})")
                 
                 # 更新下一帧时间
-                # 如果处理太慢（超过一帧间隔），从当前时间开始计算，避免累积延迟
                 if current_time > next_frame_time + frame_interval:
-                    # 处理太慢，从当前时间重新开始计时
                     next_frame_time = current_time + frame_interval
                 else:
-                    # 正常情况，按固定间隔递增
                     next_frame_time += frame_interval
             except Exception as e:
                 print(f"⚠️ 录制屏幕时发生错误: {e}")
                 import traceback
                 traceback.print_exc()
                 break
+        
+        # 等待所有帧写入完成
+        frame_queue.put(None)  # 发送结束信号
+        write_thread.join(timeout=10)
+        
+        # 关闭 dxcam
+        if use_dxcam and camera:
+            try:
+                camera.stop()
+                del camera
+            except:
+                pass
         
         # 计算实际录制时长
         recording_end_time = time.time()
@@ -956,8 +1081,8 @@ class ScreenRecorder:
             ]
 
             print(f"启动 FFmpeg: {' '.join(cmd)}")
-            # 在 Windows 上，ensure stdin is PIPE and use creationflags to hide console
-            kwargs = {'stdin': subprocess.PIPE, 'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+            # stdin 用 PIPE 接收帧数据，stdout/stderr 丢弃避免缓冲区阻塞
+            kwargs = {'stdin': subprocess.PIPE, 'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}
             if sys.platform == 'win32':
                 kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
             proc = subprocess.Popen(cmd, **kwargs)
@@ -992,20 +1117,17 @@ class ScreenRecorder:
             self.ffmpeg_stdin = None
         if self.ffmpeg_proc:
             try:
-                # 等待 ffmpeg 退出，并捕获输出用于调试
-                out, err = self.ffmpeg_proc.communicate(timeout=10)
-                if out:
-                    print(f"FFmpeg stdout: {out.decode(errors='ignore')}")
-                if err:
-                    decoded_err = err.decode(errors='ignore')
-                    print(f"FFmpeg stderr: {decoded_err}")
-                    # 保存 stderr 到实例字段，供外部写入调试日志
-                    self._ffmpeg_stderr = decoded_err
+                # 等待进程退出
+                self.ffmpeg_proc.wait(timeout=30)
             except subprocess.TimeoutExpired:
+                print("⚠️ FFmpeg 进程超时，强制终止...")
                 try:
                     self.ffmpeg_proc.kill()
+                    self.ffmpeg_proc.wait(timeout=5)
                 except Exception:
                     pass
+            except Exception as e:
+                print(f"⚠️ 关闭 FFmpeg 时出错: {e}")
             finally:
                 self.ffmpeg_proc = None
     

@@ -7,20 +7,29 @@
 #   all-features: false
 #   with-sources: false
 #   generate-hashes: false
+#   universal: false
 
 -e file:.
 altgraph==0.17.4
     # via pyinstaller
+comtypes==1.4.13
+    # via dxcam
+dxcam==0.0.5
+    # via luping
 importlib-metadata==8.5.0
     # via pyinstaller
     # via pyinstaller-hooks-contrib
 mss==9.0.2
     # via luping
 numpy==2.0.2
+    # via dxcam
     # via luping
     # via opencv-contrib-python
+    # via opencv-python
 opencv-contrib-python==4.12.0.88
     # via luping
+opencv-python==4.12.0.88
+    # via dxcam
 packaging==25.0
     # via pyinstaller
     # via pyinstaller-hooks-contrib

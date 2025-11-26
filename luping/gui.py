@@ -455,6 +455,7 @@ class RecorderGUI:
                 raise RuntimeError("ScreenRecorder 模块未正确加载")
             
             # 如果完整 recorder 可用且需要启用监听，直接使用完整 recorder
+            # 使用原始分辨率，不缩放
             if self.use_input_listeners and self.has_full_recorder:
                 print("使用完整 recorder（包含键盘鼠标监听）")
                 from luping.recorder import ScreenRecorder as FullScreenRecorder
