@@ -206,17 +206,28 @@ class ScreenRecorder:
                     width = int(self.width)
                     height = int(self.height)
                     output_str = str(self.video_path.absolute())
+                    
+                    # 使用优化的编码参数，提升视频质量和播放流畅度
                     cmd = [
                         ffmpeg_path,
                         '-y',
                         '-f', 'rawvideo',
                         '-pix_fmt', 'bgr24',
                         '-s', f'{width}x{height}',
-                        '-r', '30',
+                        '-r', str(int(self.target_fps)),
                         '-i', '-',
                         '-c:v', 'libx264',
+                        '-preset', 'fast',  # 从 veryfast 改为 fast，提升质量
+                        '-crf', '23',  # 质量控制，23 是较好的平衡点
                         '-pix_fmt', 'yuv420p',
-                        '-preset', 'veryfast',
+                        '-profile:v', 'high',  # 使用 High Profile，兼容性更好
+                        '-level', '4.0',  # H.264 Level，确保兼容性
+                        '-g', str(int(self.target_fps * 2)),  # 关键帧间隔：每2秒一个关键帧
+                        '-keyint_min', str(int(self.target_fps)),  # 最小关键帧间隔
+                        '-sc_threshold', '0',  # 禁用场景切换检测
+                        '-tune', 'zerolatency',  # 零延迟调优，适合实时录制
+                        '-movflags', '+faststart',  # 快速启动，优化网络播放
+                        '-r', str(int(self.target_fps)),  # 输出帧率
                         output_str
                     ]
                     print(f"启动 FFmpeg: {' '.join(cmd)}")

@@ -1064,21 +1064,99 @@ class ScreenRecorder:
             width = int(self.width)
             height = int(self.height)
             output_str = str(output_path.absolute())
-
+            
+            # 尝试检测硬件加速编码器（优先使用硬件加速）
+            use_hw_accel = False
+            hw_encoder = None
+            
+            # 检测可用的硬件编码器
+            if sys.platform == 'win32':
+                # Windows: 尝试 NVENC (NVIDIA), QSV (Intel), AMF (AMD)
+                hw_encoders = [
+                    ('h264_nvenc', 'NVIDIA NVENC'),
+                    ('h264_qsv', 'Intel QuickSync'),
+                    ('h264_amf', 'AMD AMF'),
+                ]
+            elif sys.platform == 'darwin':
+                # macOS: 尝试 VideoToolbox
+                hw_encoders = [
+                    ('h264_videotoolbox', 'Apple VideoToolbox'),
+                ]
+            else:
+                # Linux: 尝试 VAAPI, NVENC
+                hw_encoders = [
+                    ('h264_nvenc', 'NVIDIA NVENC'),
+                    ('h264_vaapi', 'VAAPI'),
+                ]
+            
+            # 检测硬件编码器是否可用（只检测一次，缓存结果）
+            try:
+                test_cmd = [ffmpeg_path, '-hide_banner', '-encoders']
+                kwargs_test = {'capture_output': True, 'text': True, 'timeout': 5}
+                if sys.platform == 'win32':
+                    kwargs_test['creationflags'] = subprocess.CREATE_NO_WINDOW
+                test_proc = subprocess.run(test_cmd, **kwargs_test)
+                if test_proc.returncode == 0:
+                    available_encoders = test_proc.stdout
+                    for encoder, name in hw_encoders:
+                        if encoder in available_encoders:
+                            hw_encoder = encoder
+                            use_hw_accel = True
+                            print(f"✓ 检测到硬件加速编码器: {name} ({encoder})")
+                            break
+            except Exception as e:
+                # 检测失败不影响录制，继续使用软件编码
+                print(f"⚠️ 硬件编码器检测失败，将使用软件编码: {e}")
+            
+            # 构建 FFmpeg 命令
             cmd = [
                 ffmpeg_path,
                 '-y',
                 '-f', 'rawvideo',
                 '-pix_fmt', 'bgr24',
                 '-s', f'{width}x{height}',
-                '-r', '30',  # 输入帧率
+                '-r', str(int(self.target_fps)),  # 输入帧率
                 '-i', '-',
-                '-c:v', 'libx264',
-                '-pix_fmt', 'yuv420p',
-                '-preset', 'veryfast',
-                '-r', '30',  # 输出帧率，确保与输入一致
-                output_str
             ]
+            
+            # 编码器参数
+            if use_hw_accel and hw_encoder:
+                # 使用硬件加速编码
+                cmd.extend([
+                    '-c:v', hw_encoder,
+                    '-preset', 'fast',  # 硬件编码器的预设
+                    '-pix_fmt', 'yuv420p',
+                ])
+                # 硬件编码器的质量参数
+                if hw_encoder == 'h264_nvenc':
+                    cmd.extend(['-rc', 'vbr', '-cq', '23', '-b:v', '0'])
+                elif hw_encoder == 'h264_qsv':
+                    cmd.extend(['-global_quality', '23'])
+                elif hw_encoder == 'h264_amf':
+                    cmd.extend(['-quality', 'balanced', '-rc', 'vbr_peak'])
+                elif hw_encoder == 'h264_videotoolbox':
+                    cmd.extend(['-allow_sw', '1', '-realtime', '1'])
+            else:
+                # 使用软件编码 (libx264)，优化参数以提升播放流畅度
+                cmd.extend([
+                    '-c:v', 'libx264',
+                    '-preset', 'fast',  # 从 veryfast 改为 fast，提升质量
+                    '-crf', '23',  # 质量控制，23 是较好的平衡点（18-28范围，越小质量越好）
+                    '-pix_fmt', 'yuv420p',
+                    '-profile:v', 'high',  # 使用 High Profile，兼容性更好
+                    '-level', '4.0',  # H.264 Level，确保兼容性
+                    '-g', str(int(self.target_fps * 2)),  # 关键帧间隔：每2秒一个关键帧（GOP size）
+                    '-keyint_min', str(int(self.target_fps)),  # 最小关键帧间隔
+                    '-sc_threshold', '0',  # 禁用场景切换检测，确保关键帧间隔
+                    '-tune', 'zerolatency',  # 零延迟调优，适合实时录制
+                    '-movflags', '+faststart',  # 快速启动，优化网络播放
+                ])
+            
+            # 输出帧率
+            cmd.extend([
+                '-r', str(int(self.target_fps)),  # 输出帧率，确保与输入一致
+                output_str
+            ])
 
             print(f"启动 FFmpeg: {' '.join(cmd)}")
             # stdin 用 PIPE 接收帧数据，stdout/stderr 丢弃避免缓冲区阻塞
